@@ -1,0 +1,40 @@
+const { DataTypes } = require('sequelize');
+const sequelize = require('../config/database');
+const Person = require('./Person');
+
+const Report = sequelize.define('Report', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  personId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  latitude: {
+    type: DataTypes.DECIMAL(10, 8),
+    allowNull: false,
+  },
+  longitude: {
+    type: DataTypes.DECIMAL(11, 8),
+    allowNull: false,
+  },
+  urgency: {
+    type: DataTypes.ENUM('Baja', 'Media', 'Alta', 'Crítica'),
+    defaultValue: 'Media',
+  },
+  status: {
+    type: DataTypes.ENUM('Pendiente', 'Atendido', 'Derivado'),
+    defaultValue: 'Pendiente',
+  },
+  comment: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+});
+
+Report.belongsTo(Person, { foreignKey: 'personId' });
+Person.hasMany(Report, { foreignKey: 'personId' });
+
+module.exports = Report;
