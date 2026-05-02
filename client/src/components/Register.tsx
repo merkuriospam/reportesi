@@ -75,7 +75,7 @@ const Register: React.FC = () => {
             <div className="space-y-1">
               <label className="text-sm font-bold text-gray-700 ml-1">PIN de registro</label>
               <input
-                type="text"
+                type="password"
                 className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-green-600 outline-none transition"
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
