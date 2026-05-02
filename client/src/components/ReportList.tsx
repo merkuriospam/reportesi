@@ -1,21 +1,46 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Clock, MapPin, User } from 'lucide-react';
+import { Clock, MapPin, ClipboardList, Calendar as CalendarIcon } from 'lucide-react';
+import Calendar from './Calendar';
 
 const ReportList: React.FC = () => {
+  const navigate = useNavigate();
   const [reports, setReports] = useState<any[]>([]);
+  const [datesWithReports, setDatesWithReports] = useState<string[]>([]);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const [loading, setLoading] = useState(true);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   useEffect(() => {
-    fetchReports();
+    fetchDatesWithReports();
   }, []);
 
-  const fetchReports = async () => {
+  useEffect(() => {
+    fetchReportsForDate();
+  }, [selectedDate]);
+
+  const fetchDatesWithReports = async () => {
     try {
-      const response = await api.get('/reports');
-      setReports(response.data.reverse()); // Show newest first
+      const res = await api.get('/reports/dates-with-reports');
+      setDatesWithReports(res.data);
+    } catch (err) {
+      console.error('Error fetching dates', err);
+    }
+  };
+
+  const fetchReportsForDate = async () => {
+    setLoading(true);
+    try {
+      const year = selectedDate.getFullYear();
+      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const day = String(selectedDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      const response = await api.get(`/reports/by-date/${dateStr}`);
+      setReports(response.data.reverse());
     } catch (err) {
       console.error('Error fetching reports', err);
+      setReports([]);
     } finally {
       setLoading(false);
     }
@@ -30,6 +55,14 @@ const ReportList: React.FC = () => {
     });
   };
 
+  const formatDateHeader = (date: Date) => {
+    return date.toLocaleDateString('es-AR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   const getUrgencyColor = (urgency: string) => {
     switch (urgency) {
       case 'Crítica': return 'bg-red-100 text-red-700 border-red-200';
@@ -39,21 +72,44 @@ const ReportList: React.FC = () => {
     }
   };
 
-  if (loading) return (
+  if (loading && reports.length === 0) return (
     <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
     </div>
   );
 
   return (
-    <div className="max-w-2xl mx-auto pb-10">
-      <div className="flex justify-between items-center mb-6">
+    <div className="max-w-2xl mx-auto pb-10 relative">
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-black text-gray-800 tracking-tight">Historial de Recorrida</h2>
-        <div className="bg-white px-3 py-1 rounded-full shadow-sm text-xs font-bold text-gray-400 border border-gray-100">
-          {reports.length} reportes
-        </div>
+        <button
+          onClick={() => setCalendarOpen(!calendarOpen)}
+          className={`p-2.5 rounded-xl shadow-lg border transition-all ${
+            calendarOpen
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-gray-600 border-gray-100 hover:text-blue-600'
+          }`}
+        >
+          <CalendarIcon size={20} />
+        </button>
       </div>
-      
+
+      {calendarOpen && (
+        <>
+          <div className="fixed inset-0 z-[999]" onClick={() => setCalendarOpen(false)} />
+          <Calendar
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            datesWithReports={datesWithReports}
+            onClose={() => setCalendarOpen(false)}
+          />
+        </>
+      )}
+
+      <div className="mb-4 px-1">
+        <p className="text-sm font-bold text-gray-500 capitalize">{formatDateHeader(selectedDate)}</p>
+      </div>
+
       <div className="space-y-4">
         {reports.map((report) => (
           <div key={report.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition">
@@ -92,19 +148,17 @@ const ReportList: React.FC = () => {
                   </span>
                 </div>
                 
-                <a 
-                  href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+                <button 
+                  onClick={() => navigate('/map', { state: { selectedDate: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` } })}
                   className="flex items-center text-xs font-bold text-blue-600 hover:text-indigo-700 transition"
                 >
                   <MapPin size={16} className="mr-1" /> VER EN MAPA
-                </a>
+                </button>
               </div>
             </div>
           </div>
         ))}
-        {reports.length === 0 && (
+        {!loading && reports.length === 0 && (
           <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
             <ClipboardList size={48} className="mx-auto text-gray-200 mb-4" />
             <p className="text-gray-400 font-medium">No se han registrado reportes en esta jornada.</p>

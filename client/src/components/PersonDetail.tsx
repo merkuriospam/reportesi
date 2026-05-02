@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { ArrowLeft, Clock, MapPin, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin } from 'lucide-react';
 
 const PersonDetail: React.FC = () => {
   const { id } = useParams();

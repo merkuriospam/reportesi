@@ -19,6 +19,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     try {
       const response = await api.post('/auth/login', { username, password });
       onLogin(response.data.token);
+      window.location.href = '/';
     } catch (err: any) {
       setError(err.response?.data?.error || 'Error al iniciar sesión');
     } finally {

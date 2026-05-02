@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import ReportForm from './components/ReportForm';
@@ -7,10 +7,13 @@ import PeopleAdmin from './components/PeopleAdmin';
 import ReportList from './components/ReportList';
 import Dashboard from './components/Dashboard';
 import PersonDetail from './components/PersonDetail';
-import { LogOut, Users, ClipboardList, History, LayoutDashboard } from 'lucide-react';
+import MapReport from './components/MapReport';
+import Sidebar from './components/Sidebar';
+import { Menu } from 'lucide-react';
 
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogin = (newToken: string) => {
     localStorage.setItem('token', newToken);
@@ -24,41 +27,33 @@ function App() {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50 pb-24 md:pb-0 md:pt-20 transition-colors">
+      <div className="min-h-screen bg-gray-50 transition-colors">
         {token && (
-          <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-lg border-t border-gray-100 md:top-0 md:bottom-auto md:border-t-0 md:border-b flex justify-around items-center px-2 py-3 z-50 shadow-2xl shadow-black/5">
-            <Link to="/" className="flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors group">
-              <LayoutDashboard size={22} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Inicio</span>
-            </Link>
-            <Link to="/report" className="flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors group">
-              <ClipboardList size={22} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Reportar</span>
-            </Link>
-            <Link to="/history" className="flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors group">
-              <History size={22} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Historial</span>
-            </Link>
-            <Link to="/people" className="flex flex-col items-center p-2 text-gray-400 hover:text-blue-600 transition-colors group">
-              <Users size={22} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Censo</span>
-            </Link>
-            <button onClick={handleLogout} className="flex flex-col items-center p-2 text-gray-400 hover:text-red-500 transition-colors group">
-              <LogOut size={22} className="group-hover:scale-110 transition-transform" />
-              <span className="text-[10px] font-bold mt-1 uppercase tracking-tighter">Salir</span>
-            </button>
-          </nav>
+          <>
+            <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
+            <header className="bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm h-[60px]">
+              <div className="h-10 w-auto">
+                <img src="/logo.png" alt="Logo" className="h-full object-contain" />
+              </div>
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="p-2.5 bg-white rounded-xl border border-gray-100 text-gray-600 hover:text-blue-600 hover:scale-105 transition-all"
+              >
+                <Menu size={22} />
+              </button>
+            </header>
+          </>
         )}
 
         <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
           <Routes>
             <Route 
               path="/login" 
-              element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/" />} 
+              element={!token ? <Login onLogin={handleLogin} /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/register" 
-              element={!token ? <Register /> : <Navigate to="/" />} 
+              element={!token ? <Register /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/" 
@@ -71,6 +66,10 @@ function App() {
             <Route 
               path="/history" 
               element={token ? <ReportList /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/map" 
+              element={token ? <MapReport /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/people" 
