@@ -33,7 +33,8 @@ function App() {
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
             <header className="bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm h-[60px]">
               <div className="h-10 w-auto">
-                <img src="/logo.png" alt="Logo" className="h-full object-contain" />
+                {/* <img src="/logo.png" alt="Logo" className="h-full object-contain" /> */}
+                <span className="ml-2 text-xl font-bold text-gray-800">Recorridas Nocturnas</span>
               </div>
               <button
                 onClick={() => setSidebarOpen(true)}

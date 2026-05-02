@@ -6,7 +6,12 @@ require('dotenv').config();
 
 router.post('/register', async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const { username, password, pin } = req.body;
+    
+    if (pin !== process.env.REGISTER_PIN) {
+      return res.status(401).json({ error: 'PIN inválido' });
+    }
+    
     const user = await User.create({ username, password });
     res.status(201).json({ message: 'User created' });
   } catch (error) {

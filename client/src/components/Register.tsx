@@ -7,6 +7,7 @@ import { ClipboardList, UserPlus } from 'lucide-react';
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -16,7 +17,7 @@ const Register: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await api.post('/auth/register', { username, password });
+      await api.post('/auth/register', { username, password, pin });
       setSuccess(true);
       setTimeout(() => navigate('/login'), 2000);
     } catch (err: any) {
@@ -68,6 +69,17 @@ const Register: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 6 caracteres"
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-bold text-gray-700 ml-1">PIN de registro</label>
+              <input
+                type="text"
+                className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-green-600 outline-none transition"
+                value={pin}
+                onChange={(e) => setPin(e.target.value)}
+                placeholder="Ingresa el PIN proporcionado"
                 required
               />
             </div>
