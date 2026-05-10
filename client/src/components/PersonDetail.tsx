@@ -77,7 +77,7 @@ const PersonDetail: React.FC = () => {
                 {person.ageEstimate && <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-black uppercase rounded-full">~{person.ageEstimate} años</span>}
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <button
                 onClick={() => navigate('/people', { state: { editPerson: person } })}
                 className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
@@ -95,7 +95,7 @@ const PersonDetail: React.FC = () => {
               </button>
               <button 
                 onClick={() => navigate(`/report?personId=${person.id}`)}
-                className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition-all ml-4"
+                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition-all"
               >
                 NUEVO REPORTE
               </button>
