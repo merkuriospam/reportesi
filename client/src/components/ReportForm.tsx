@@ -28,8 +28,8 @@ const ReportForm: React.FC = () => {
 
   const fetchPeople = async () => {
     try {
-      const response = await api.get('/people');
-      setPeople(response.data);
+      const response = await api.get('/people?limit=1000');
+      setPeople(response.data.data);
     } catch (err) {
       console.error('Error fetching people', err);
     }

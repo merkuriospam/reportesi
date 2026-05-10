@@ -24,12 +24,12 @@ const Dashboard: React.FC = () => {
   const fetchStats = async () => {
     try {
       const [peopleRes, reportsRes] = await Promise.all([
-        api.get('/people'),
-        api.get('/reports')
+        api.get('/people?limit=1000'),
+        api.get('/reports?limit=1000')
       ]);
       
-      const people = peopleRes.data;
-      const allReports = reportsRes.data;
+      const people = peopleRes.data.data;
+      const allReports = reportsRes.data.data;
       setReports(allReports);
       
       setStats({

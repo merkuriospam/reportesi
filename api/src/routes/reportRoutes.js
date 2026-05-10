@@ -6,13 +6,26 @@ const authenticateToken = require('../middleware/auth');
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const reports = await Report.findAll({
+    const limit = Math.min(parseInt(req.query.limit) || 10, 1000);
+    const offset = parseInt(req.query.offset) || 0;
+    const where = {};
+    if (req.query.date) {
+      const [year, month, day] = req.query.date.split('-').map(Number);
+      where.createdAt = {
+        [Op.between]: [new Date(year, month - 1, day, 0, 0, 0, 0), new Date(year, month - 1, day, 23, 59, 59, 999)]
+      };
+    }
+    const { count, rows } = await Report.findAndCountAll({
+      where,
       include: [
         { model: User, where: { groupId: req.user.groupId }, attributes: [] },
         Person,
       ],
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
-    res.json(reports);
+    res.json({ data: rows, total: count });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -33,15 +46,19 @@ router.post('/', authenticateToken, async (req, res) => {
 
 router.get('/person/:personId', authenticateToken, async (req, res) => {
   try {
-    const reports = await Report.findAll({
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+    const offset = parseInt(req.query.offset) || 0;
+    const { count, rows } = await Report.findAndCountAll({
       where: { personId: req.params.personId },
       include: [
         { model: User, where: { groupId: req.user.groupId }, attributes: [] },
         Person,
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
-    res.json(reports);
+    res.json({ data: rows, total: count });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -6,10 +6,14 @@ const authenticateToken = require('../middleware/auth');
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const people = await Person.findAll({
+    const limit = Math.min(parseInt(req.query.limit) || 10, 100);
+    const offset = parseInt(req.query.offset) || 0;
+    const { count, rows } = await Person.findAndCountAll({
       include: [{ model: User, where: { groupId: req.user.groupId }, attributes: [] }],
+      limit,
+      offset,
     });
-    res.json(people);
+    res.json({ data: rows, total: count });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

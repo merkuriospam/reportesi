@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Clock, MapPin, ClipboardList, Calendar as CalendarIcon } from 'lucide-react';
+import { Clock, MapPin, ClipboardList, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import Calendar from './Calendar';
+
+const PAGE_SIZES = [10, 20, 40];
 
 const ReportList: React.FC = () => {
   const navigate = useNavigate();
   const [reports, setReports] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [datesWithReports, setDatesWithReports] = useState<string[]>([]);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [calendarOpen, setCalendarOpen] = useState(false);
 
@@ -17,8 +22,8 @@ const ReportList: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetchReportsForDate();
-  }, [selectedDate]);
+    fetchReports();
+  }, [selectedDate, page, pageSize]);
 
   const fetchDatesWithReports = async () => {
     try {
@@ -29,15 +34,19 @@ const ReportList: React.FC = () => {
     }
   };
 
-  const fetchReportsForDate = async () => {
+  const fetchReports = async () => {
     setLoading(true);
     try {
-      const year = selectedDate.getFullYear();
-      const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
-      const day = String(selectedDate.getDate()).padStart(2, '0');
-      const dateStr = `${year}-${month}-${day}`;
-      const response = await api.get(`/reports/by-date/${dateStr}`);
-      setReports(response.data.reverse());
+      let url = `/reports?limit=${pageSize}&offset=${page * pageSize}`;
+      if (selectedDate) {
+        const year = selectedDate.getFullYear();
+        const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate.getDate()).padStart(2, '0');
+        url += `&date=${year}-${month}-${day}`;
+      }
+      const response = await api.get(url);
+      setReports(response.data.data);
+      setTotal(response.data.total);
     } catch (err) {
       console.error('Error fetching reports', err);
       setReports([]);
@@ -46,20 +55,23 @@ const ReportList: React.FC = () => {
     }
   };
 
+  const handleSelectDate = (date: Date) => {
+    setSelectedDate(date);
+    setPage(0);
+    setCalendarOpen(false);
+  };
+
+  const clearDate = () => {
+    setSelectedDate(null);
+    setPage(0);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString('es-AR', {
       day: '2-digit',
       month: 'short',
       hour: '2-digit',
       minute: '2-digit'
-    });
-  };
-
-  const formatDateHeader = (date: Date) => {
-    return date.toLocaleDateString('es-AR', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
     });
   };
 
@@ -72,6 +84,11 @@ const ReportList: React.FC = () => {
     }
   };
 
+  const dateParam = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  const totalPages = Math.ceil(total / pageSize);
+
   if (loading && reports.length === 0) return (
     <div className="flex justify-center items-center h-64">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -82,32 +99,54 @@ const ReportList: React.FC = () => {
     <div className="max-w-2xl mx-auto pb-10 relative">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-black text-gray-800 tracking-tight">Historial de Recorrida</h2>
-        <button
-          onClick={() => setCalendarOpen(!calendarOpen)}
-          className={`p-2.5 rounded-xl shadow-lg border transition-all ${
-            calendarOpen
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-gray-600 border-gray-100 hover:text-blue-600'
-          }`}
-        >
-          <CalendarIcon size={20} />
-        </button>
+        <div className="flex items-center gap-2">
+          {selectedDate && (
+            <button
+              onClick={clearDate}
+              className="p-2.5 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition"
+              title="Ver todos"
+            >
+              <X size={20} />
+            </button>
+          )}
+          <button
+            onClick={() => setCalendarOpen(!calendarOpen)}
+            className={`p-2.5 rounded-xl shadow-lg border transition-all ${
+              calendarOpen
+                ? 'bg-blue-600 text-white border-blue-600'
+                : 'bg-white text-gray-600 border-gray-100 hover:text-blue-600'
+            }`}
+          >
+            <CalendarIcon size={20} />
+          </button>
+        </div>
       </div>
 
       {calendarOpen && (
         <>
           <div className="fixed inset-0 z-[999]" onClick={() => setCalendarOpen(false)} />
           <Calendar
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
+            selectedDate={selectedDate || new Date()}
+            onSelectDate={handleSelectDate}
             datesWithReports={datesWithReports}
             onClose={() => setCalendarOpen(false)}
           />
         </>
       )}
 
-      <div className="mb-4 px-1">
-        <p className="text-sm font-bold text-gray-500 capitalize">{formatDateHeader(selectedDate)}</p>
+      <div className="mb-4 px-1 flex items-center gap-2">
+        {selectedDate ? (
+          <>
+            <p className="text-sm font-bold text-gray-500 capitalize">
+              {selectedDate.toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
+            <button onClick={clearDate} className="text-gray-400 hover:text-red-500 transition">
+              <X size={16} />
+            </button>
+          </>
+        ) : (
+          <p className="text-sm font-bold text-blue-600">Últimos reportes</p>
+        )}
       </div>
 
       <div className="space-y-4">
@@ -149,7 +188,7 @@ const ReportList: React.FC = () => {
                 </div>
                 
                 <button 
-                  onClick={() => navigate('/map', { state: { selectedDate: `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}` } })}
+                  onClick={() => navigate('/map', { state: { selectedDate: dateParam(new Date(report.createdAt)) } })}
                   className="flex items-center text-xs font-bold text-blue-600 hover:text-indigo-700 transition"
                 >
                   <MapPin size={16} className="mr-1" /> VER EN MAPA
@@ -161,10 +200,44 @@ const ReportList: React.FC = () => {
         {!loading && reports.length === 0 && (
           <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
             <ClipboardList size={48} className="mx-auto text-gray-200 mb-4" />
-            <p className="text-gray-400 font-medium">No se han registrado reportes en esta jornada.</p>
+            <p className="text-gray-400 font-medium">No se han registrado reportes.</p>
           </div>
         )}
       </div>
+
+      {total > 0 && (
+        <div className="flex items-center justify-between mt-6 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-gray-500">Ver</span>
+            <select
+              className="text-xs font-bold border-0 bg-gray-50 rounded-lg px-2 py-1 outline-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500"
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+            >
+              {PAGE_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="p-2 rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-xs font-bold text-gray-500">
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              className="p-2 rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,15 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import api from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UserPlus, X, Check, Users, MapPin } from 'lucide-react';
+import { UserPlus, X, Check, Users, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const PAGE_SIZES = [10, 20, 40];
 
 const PeopleAdmin: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [people, setPeople] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [isEditing, setIsEditing] = useState(false);
   const [currentPerson, setCurrentPerson] = useState({ 
-    id: null, 
+    id: null as number | null, 
     name: '', 
     alias: '', 
     ageEstimate: '', 
@@ -21,7 +26,7 @@ const PeopleAdmin: React.FC = () => {
 
   useEffect(() => {
     fetchPeople();
-  }, []);
+  }, [page, pageSize]);
 
   useEffect(() => {
     if (location.state?.editPerson) {
@@ -33,8 +38,9 @@ const PeopleAdmin: React.FC = () => {
 
   const fetchPeople = async () => {
     try {
-      const response = await api.get('/people');
-      setPeople(response.data);
+      const response = await api.get(`/people?limit=${pageSize}&offset=${page * pageSize}`);
+      setPeople(response.data.data);
+      setTotal(response.data.total);
     } catch (err) {
       console.error('Error fetching people', err);
     }
@@ -54,6 +60,7 @@ const PeopleAdmin: React.FC = () => {
       }
       setIsEditing(false);
       resetForm();
+      setPage(0);
       fetchPeople();
     } catch (err) {
       alert('Error al guardar');
@@ -72,10 +79,16 @@ const PeopleAdmin: React.FC = () => {
     });
   };
 
-  const filteredPeople = people.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    (p.alias && p.alias.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  const filteredPeople = useMemo(() => {
+    if (!searchTerm) return people;
+    const q = searchTerm.toLowerCase();
+    return people.filter(p => 
+      p.name.toLowerCase().includes(q) || 
+      (p.alias && p.alias.toLowerCase().includes(q))
+    );
+  }, [people, searchTerm]);
+
+  const totalPages = Math.ceil(total / pageSize);
 
   return (
     <div className="max-w-4xl mx-auto pb-10">
@@ -209,7 +222,6 @@ const PeopleAdmin: React.FC = () => {
               <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 font-black text-xl">
                 {p.name[0]}
               </div>
-
             </div>
             
             <h4 className="font-black text-lg text-gray-900 leading-tight mb-1">
@@ -239,6 +251,40 @@ const PeopleAdmin: React.FC = () => {
           </div>
         )}
       </div>
+
+      {!isEditing && total > 0 && (
+        <div className="flex items-center justify-between mt-6 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-gray-500">Ver</span>
+            <select
+              className="text-xs font-bold border-0 bg-gray-50 rounded-lg px-2 py-1 outline-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500"
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+            >
+              {PAGE_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="p-2 rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-xs font-bold text-gray-500">
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              className="p-2 rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,31 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { ArrowLeft, Clock, MapPin, Edit2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+
+const PAGE_SIZES = [10, 20, 40];
 
 const PersonDetail: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [person, setPerson] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData();
+    fetchPerson();
   }, [id]);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    if (id) fetchReports();
+  }, [id, page, pageSize]);
+
+  const fetchPerson = async () => {
     try {
-      const [personRes, reportsRes] = await Promise.all([
-        api.get('/people'), // We filter manually or add a GET /people/:id
-        api.get(`/reports/person/${id}`)
-      ]);
-      
-      const personData = personRes.data.find((p: any) => p.id === parseInt(id!));
-      setPerson(personData);
-      setReports(reportsRes.data);
+      const res = await api.get('/people?limit=1000');
+      const p = res.data.data.find((p: any) => p.id === parseInt(id!));
+      setPerson(p);
     } catch (err) {
-      console.error('Error fetching details', err);
+      console.error('Error fetching person', err);
+    }
+  };
+
+  const fetchReports = async () => {
+    try {
+      const res = await api.get(`/reports/person/${id}?limit=${pageSize}&offset=${page * pageSize}`);
+      setReports(res.data.data);
+      setTotal(res.data.total);
+    } catch (err) {
+      console.error('Error fetching reports', err);
     } finally {
       setLoading(false);
     }
@@ -41,6 +55,8 @@ const PersonDetail: React.FC = () => {
       }
     }
   };
+
+  const totalPages = Math.ceil(total / pageSize);
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
@@ -167,6 +183,40 @@ const PersonDetail: React.FC = () => {
           </div>
         )}
       </div>
+
+      {total > 0 && (
+        <div className="flex items-center justify-between mt-6 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-gray-500">Ver</span>
+            <select
+              className="text-xs font-bold border-0 bg-gray-50 rounded-lg px-2 py-1 outline-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500"
+              value={pageSize}
+              onChange={(e) => { setPageSize(Number(e.target.value)); setPage(0); }}
+            >
+              {PAGE_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="p-2 rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <span className="text-xs font-bold text-gray-500">
+              {page + 1} / {totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              className="p-2 rounded-xl hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
