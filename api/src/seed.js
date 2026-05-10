@@ -18,7 +18,9 @@ const ensureTables = async () => {
   const columns = [
     { table: 'Users', column: 'groupId', type: 'INT NULL' },
     { table: 'People', column: 'userId', type: 'INT NULL' },
+    { table: 'People', column: 'deletedAt', type: 'DATETIME NULL' },
     { table: 'Reports', column: 'userId', type: 'INT NULL' },
+    { table: 'Reports', column: 'deletedAt', type: 'DATETIME NULL' },
   ];
   for (const { table, column, type } of columns) {
     try {
