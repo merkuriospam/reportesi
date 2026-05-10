@@ -50,7 +50,8 @@ const Dashboard: React.FC = () => {
     reports.forEach((r: any) => {
       const raw = r.createdAt;
       if (!raw) return;
-      const s = raw.split('T')[0];
+      const d = new Date(raw);
+      const s = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       counts[s] = (counts[s] || 0) + 1;
     });
     const keys = Object.keys(counts).sort();
@@ -194,13 +195,13 @@ const Dashboard: React.FC = () => {
             ) : monthlyData.days.map((day, i) => {
               const h = (day.count / monthlyData.maxCount) * 100;
               return (
-                <div key={i} className="flex-1 relative h-full">
+                <div key={i} className="flex-1 relative h-full group cursor-pointer" onClick={() => navigate(`/map`, { state: { selectedDate: day.date } })}>
                   <div
                     className="absolute bottom-0 w-full rounded-t bg-blue-500 transition-all hover:opacity-80"
                     style={{ height: `${Math.max(h, 4)}%` }}
                   >
-                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                      {day.label}: {day.count}
+                    <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-[10px] px-2 py-1 rounded whitespace-nowrap z-10">
+                      {day.count}
                     </div>
                   </div>
                 </div>
