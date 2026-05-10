@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { ArrowLeft, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, Edit2, Trash2 } from 'lucide-react';
 
 const PersonDetail: React.FC = () => {
   const { id } = useParams();
@@ -28,6 +28,17 @@ const PersonDetail: React.FC = () => {
       console.error('Error fetching details', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (window.confirm('¿Seguro que deseas eliminar a esta persona? También se eliminarán todos sus reportes de asistencia.')) {
+      try {
+        await api.delete(`/people/${person.id}`);
+        navigate('/people');
+      } catch (err) {
+        alert('Error al eliminar');
+      }
     }
   };
 
@@ -66,12 +77,29 @@ const PersonDetail: React.FC = () => {
                 {person.ageEstimate && <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-black uppercase rounded-full">~{person.ageEstimate} años</span>}
               </div>
             </div>
-            <button 
-              onClick={() => navigate(`/report?personId=${person.id}`)}
-              className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition-all"
-            >
-              NUEVO REPORTE
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigate('/people', { state: { editPerson: person } })}
+                className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
+                title="Editar"
+              >
+                <Edit2 size={20} />
+              </button>
+              <div className="w-px h-8 bg-gray-200"></div>
+              <button
+                onClick={handleDelete}
+                className="p-3 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                title="Eliminar"
+              >
+                <Trash2 size={20} />
+              </button>
+              <button 
+                onClick={() => navigate(`/report?personId=${person.id}`)}
+                className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition-all ml-4"
+              >
+                NUEVO REPORTE
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 border-t border-gray-50 pt-8">
@@ -120,14 +148,16 @@ const PersonDetail: React.FC = () => {
               }`}>
                 {report.status}
               </span>
-              <a 
-                href={`https://www.google.com/maps?q=${report.latitude},${report.longitude}`} 
-                target="_blank" 
-                rel="noopener noreferrer"
+              <button
+                onClick={() => {
+                  const d = new Date(report.createdAt);
+                  const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                  navigate('/map', { state: { selectedDate: dateStr } });
+                }}
                 className="text-xs font-bold text-blue-600 flex items-center hover:underline"
               >
                 <MapPin size={14} className="mr-1" /> VER MAPA
-              </a>
+              </button>
             </div>
           </div>
         ))}

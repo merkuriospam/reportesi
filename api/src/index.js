@@ -15,12 +15,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/people', personRoutes);
 app.use('/api/reports', reportRoutes);
-
-// Use force: true only in development if you want to recreate tables on every restart
-// BE CAREFUL: This will delete all data.
-const syncOptions = process.env.NODE_ENV === 'development' ? { force: false } : { alter: false };
-
-sequelize.sync({ force: false }).then(() => {
+sequelize.sync().then(() => {
   console.log('Database synced');
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);

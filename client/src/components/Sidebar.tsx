@@ -29,8 +29,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
       )}
 
       <div
-        className={`fixed top-0 left-0 h-full w-72 bg-white shadow-2xl z-[10000] transform transition-transform duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 right-0 h-full w-72 bg-white shadow-2xl z-[10000] transform transition-transform duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100">

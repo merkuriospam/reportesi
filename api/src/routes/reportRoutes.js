@@ -1,12 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const { Report, Person } = require('../models');
+const { Report, Person, User } = require('../models');
 const { Op } = require('sequelize');
 const authenticateToken = require('../middleware/auth');
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const reports = await Report.findAll({ include: Person });
+    const reports = await Report.findAll({
+      include: [
+        { model: User, where: { groupId: req.user.groupId }, attributes: [] },
+        Person,
+      ],
+    });
     res.json(reports);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -16,7 +21,10 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { personId, latitude, longitude, comment, urgency, status } = req.body;
-    const report = await Report.create({ personId, latitude, longitude, comment, urgency, status });
+    const report = await Report.create({
+      personId, latitude, longitude, comment, urgency, status,
+      userId: req.user.id,
+    });
     res.status(201).json(report);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -25,9 +33,12 @@ router.post('/', authenticateToken, async (req, res) => {
 
 router.get('/person/:personId', authenticateToken, async (req, res) => {
   try {
-    const reports = await Report.findAll({ 
+    const reports = await Report.findAll({
       where: { personId: req.params.personId },
-      include: Person,
+      include: [
+        { model: User, where: { groupId: req.user.groupId }, attributes: [] },
+        Person,
+      ],
       order: [['createdAt', 'DESC']]
     });
     res.json(reports);
@@ -49,7 +60,10 @@ router.get('/by-date/:date', authenticateToken, async (req, res) => {
           [Op.between]: [startOfDay, endOfDay]
         }
       },
-      include: Person,
+      include: [
+        { model: User, where: { groupId: req.user.groupId }, attributes: [] },
+        Person,
+      ],
       order: [['createdAt', 'DESC']]
     });
     res.json(reports);
@@ -62,6 +76,9 @@ router.get('/dates-with-reports', authenticateToken, async (req, res) => {
   try {
     const reports = await Report.findAll({
       attributes: ['createdAt'],
+      include: [
+        { model: User, where: { groupId: req.user.groupId }, attributes: [] },
+      ],
       raw: true
     });
     const dates = [...new Set(reports.map(r => {

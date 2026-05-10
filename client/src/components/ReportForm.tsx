@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { MapPin, CheckCircle, Users } from 'lucide-react';
-import { useSearchParams } from 'react-router-dom';
+import { MapPin, CheckCircle, Users, Edit2 } from 'lucide-react';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const ReportForm: React.FC = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [people, setPeople] = useState<any[]>([]);
   const [personId, setPersonId] = useState(searchParams.get('personId') || '');
   const [comment, setComment] = useState('');
@@ -33,6 +34,8 @@ const ReportForm: React.FC = () => {
       console.error('Error fetching people', err);
     }
   };
+
+  const selectedPerson = people.find(p => p.id.toString() === personId);
 
   const filteredPeople = people.filter(p => 
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -108,19 +111,33 @@ const ReportForm: React.FC = () => {
               <Users className="absolute left-3 top-3 text-gray-400" size={18} />
             </div>
             
-            <select
-              className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-lg font-medium"
-              value={personId}
-              onChange={(e) => setPersonId(e.target.value)}
-              required
-            >
-              <option value="">Seleccionar de la lista...</option>
-              {filteredPeople.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name} {p.alias ? `("${p.alias}")` : ''}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select
+                className="flex-1 p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-lg font-medium"
+                value={personId}
+                onChange={(e) => setPersonId(e.target.value)}
+                required
+              >
+                <option value="">Seleccionar de la lista...</option>
+                {filteredPeople.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} {p.alias ? `("${p.alias}")` : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => navigate('/people', { state: { editPerson: selectedPerson } })}
+                disabled={!selectedPerson}
+                className={`p-4 rounded-2xl transition-all flex items-center justify-center ${
+                  selectedPerson
+                    ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 ring-1 ring-blue-200'
+                    : 'bg-gray-50 text-gray-300 cursor-not-allowed ring-1 ring-gray-200'
+                }`}
+              >
+                <Edit2 size={20} />
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

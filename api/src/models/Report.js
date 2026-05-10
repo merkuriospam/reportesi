@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const Person = require('./Person');
-
 const Report = sequelize.define('Report', {
   id: {
     type: DataTypes.INTEGER,
@@ -32,9 +30,12 @@ const Report = sequelize.define('Report', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+}, {
+  paranoid: true,
 });
-
-Report.belongsTo(Person, { foreignKey: 'personId' });
-Person.hasMany(Report, { foreignKey: 'personId' });
 
 module.exports = Report;

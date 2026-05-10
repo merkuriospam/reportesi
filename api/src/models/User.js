@@ -17,6 +17,10 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  groupId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
 }, {
   hooks: {
     beforeCreate: async (user) => {

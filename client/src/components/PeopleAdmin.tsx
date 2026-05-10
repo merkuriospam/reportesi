@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { useNavigate } from 'react-router-dom';
-import { UserPlus, Edit2, Trash2, X, Check, Users, MapPin } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { UserPlus, X, Check, Users, MapPin } from 'lucide-react';
 
 const PeopleAdmin: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [people, setPeople] = useState<any[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [currentPerson, setCurrentPerson] = useState({ 
@@ -21,6 +22,14 @@ const PeopleAdmin: React.FC = () => {
   useEffect(() => {
     fetchPeople();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.editPerson) {
+      setCurrentPerson(location.state.editPerson);
+      setIsEditing(true);
+      window.history.replaceState({}, '');
+    }
+  }, [location.state]);
 
   const fetchPeople = async () => {
     try {
@@ -61,17 +70,6 @@ const PeopleAdmin: React.FC = () => {
       description: '', 
       lastKnownLocation: '' 
     });
-  };
-
-  const handleDelete = async (id: number) => {
-    if (window.confirm('¿Seguro que deseas eliminar a esta persona?')) {
-      try {
-        await api.delete(`/people/${id}`);
-        fetchPeople();
-      } catch (err) {
-        alert('Error al eliminar');
-      }
-    }
   };
 
   const filteredPeople = people.filter(p => 
@@ -211,20 +209,7 @@ const PeopleAdmin: React.FC = () => {
               <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-blue-600 font-black text-xl">
                 {p.name[0]}
               </div>
-              <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setCurrentPerson(p); setIsEditing(true); }}
-                  className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
-                >
-                  <Edit2 size={16} />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleDelete(p.id); }}
-                  className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </div>
+
             </div>
             
             <h4 className="font-black text-lg text-gray-900 leading-tight mb-1">

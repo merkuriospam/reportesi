@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import Login from './components/Login';
 import Register from './components/Register';
 import ReportForm from './components/ReportForm';
@@ -14,6 +14,15 @@ import { Menu } from 'lucide-react';
 function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const userData = useMemo(() => {
+    if (!token) return null;
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch {
+      return null;
+    }
+  }, [token]);
 
   const handleLogin = (newToken: string) => {
     localStorage.setItem('token', newToken);
@@ -32,10 +41,14 @@ function App() {
           <>
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
             <header className="bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm h-[60px]">
-              <div className="h-10 w-auto">
-                {/* <img src="/logo.png" alt="Logo" className="h-full object-contain" /> */}
-                <span className="ml-2 text-xl font-bold text-gray-800">Recorridas Nocturnas</span>
-              </div>
+              <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
+                <span className="text-xl font-black text-gray-800 tracking-tight">ReporteSI</span>
+                {userData?.groupName && (
+                  <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg leading-none">
+                    {userData.groupName}
+                  </span>
+                )}
+              </Link>
               <button
                 onClick={() => setSidebarOpen(true)}
                 className="p-2.5 bg-white rounded-xl border border-gray-100 text-gray-600 hover:text-blue-600 hover:scale-105 transition-all"

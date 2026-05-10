@@ -1,8 +1,11 @@
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import React, { useState, useEffect, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
-import { useLocation } from 'react-router-dom';
+import 'leaflet.markercluster';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import Calendar from './Calendar';
 import api from '../services/api';
@@ -36,14 +39,76 @@ const getUrgencyIcon = (urgency: string) => {
   });
 };
 
-const MapController: React.FC<{ center: [number, number]; onReady: (map: L.Map) => void }> = ({ center, onReady }) => {
+const MapController: React.FC<{ onReady: (map: L.Map) => void }> = ({ onReady }) => {
   const map = useMap();
   useEffect(() => {
     onReady(map);
   }, [map, onReady]);
+  return null;
+};
+
+const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
+  const map = useMap();
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+
   useEffect(() => {
-    map.setView(center, map.getZoom());
-  }, [center, map]);
+    if (clusterGroupRef.current) {
+      map.removeLayer(clusterGroupRef.current);
+    }
+
+    const mcg = L.markerClusterGroup({
+      chunkedLoading: true,
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+    });
+
+    reports.forEach((report) => {
+      const color = getUrgencyColor(report.urgency);
+      const marker = L.marker([parseFloat(report.latitude), parseFloat(report.longitude)], {
+        icon: getUrgencyIcon(report.urgency),
+      });
+
+      marker.bindPopup(`
+        <div class="min-w-[200px]">
+          <div class="flex items-center gap-2 mb-2">
+            <div class="w-3 h-3 rounded-full" style="background-color: ${color}"></div>
+            <h4 class="font-bold text-gray-900">${report.Person?.name || 'Desconocido'}</h4>
+          </div>
+          <p class="text-xs text-gray-500 mb-2">
+            ${new Date(report.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+          </p>
+          ${report.comment ? `<p class="text-sm text-gray-700 italic mb-2">"${report.comment}"</p>` : ''}
+          <button onclick="window.__navigateToPerson(${report.personId})" class="w-full mb-2 flex items-center justify-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            Ver perfil
+          </button>
+          <div class="flex gap-2">
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">${report.urgency}</span>
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">${report.status}</span>
+          </div>
+        </div>
+      `);
+
+      mcg.addLayer(marker);
+    });
+
+    map.addLayer(mcg);
+
+    if (reports.length > 0) {
+      map.fitBounds(mcg.getBounds(), { padding: [40, 40], maxZoom: 16 });
+    }
+
+    clusterGroupRef.current = mcg;
+
+    return () => {
+      if (clusterGroupRef.current) {
+        map.removeLayer(clusterGroupRef.current);
+      }
+    };
+  }, [reports, map]);
+
   return null;
 };
 
@@ -59,9 +124,15 @@ const MapReport: React.FC = () => {
   const [reports, setReports] = useState<any[]>([]);
   const [datesWithReports, setDatesWithReports] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [mapCenter, setMapCenter] = useState<[number, number]>([-34.6037, -58.3816]);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const navigate = useNavigate();
   const mapInstance = useRef<L.Map | null>(null);
+  const navigateToPerson = (id: number) => navigate(`/person/${id}`);
+
+  useEffect(() => {
+    (window as any).__navigateToPerson = navigateToPerson;
+    return () => { delete (window as any).__navigateToPerson; };
+  }, [navigateToPerson]);
 
   useEffect(() => {
     fetchDatesWithReports();
@@ -89,11 +160,6 @@ const MapReport: React.FC = () => {
       const dateStr = `${year}-${month}-${day}`;
       const res = await api.get(`/reports/by-date/${dateStr}`);
       setReports(res.data);
-      if (res.data.length > 0) {
-        const avgLat = res.data.reduce((sum: number, r: any) => sum + parseFloat(r.latitude), 0) / res.data.length;
-        const avgLon = res.data.reduce((sum: number, r: any) => sum + parseFloat(r.longitude), 0) / res.data.length;
-        setMapCenter([avgLat, avgLon]);
-      }
     } catch (err) {
       console.error('Error fetching reports', err);
       setReports([]);
@@ -161,7 +227,7 @@ const MapReport: React.FC = () => {
       )}
 
       <MapContainer
-        center={mapCenter}
+        center={[-34.6037, -58.3816]}
         zoom={13}
         style={{ height: '100%', width: '100%' }}
       >
@@ -169,40 +235,8 @@ const MapReport: React.FC = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         />
-        <MapController center={mapCenter} onReady={(map) => { mapInstance.current = map; }} />
-        {reports.map((report) => (
-          <Marker
-            key={report.id}
-            position={[parseFloat(report.latitude), parseFloat(report.longitude)]}
-            icon={getUrgencyIcon(report.urgency)}
-          >
-            <Popup>
-              <div className="min-w-[200px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ backgroundColor: getUrgencyColor(report.urgency) }}
-                  />
-                  <h4 className="font-bold text-gray-900">{report.Person?.name || 'Desconocido'}</h4>
-                </div>
-                <p className="text-xs text-gray-500 mb-2">
-                  {new Date(report.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
-                </p>
-                {report.comment && (
-                  <p className="text-sm text-gray-700 italic mb-2">"{report.comment}"</p>
-                )}
-                <div className="flex gap-2">
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">
-                    {report.urgency}
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">
-                    {report.status}
-                  </span>
-                </div>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+        <MapController onReady={(map) => { mapInstance.current = map; }} />
+        <ClusterLayer reports={reports} />
       </MapContainer>
     </div>
   );

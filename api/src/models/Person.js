@@ -31,6 +31,12 @@ const Person = sequelize.define('Person', {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+}, {
+  paranoid: true,
 });
 
 module.exports = Person;

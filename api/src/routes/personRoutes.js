@@ -1,11 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { Person } = require('../models');
+const { Person, Report, User } = require('../models');
+const sequelize = require('../config/database');
 const authenticateToken = require('../middleware/auth');
 
 router.get('/', authenticateToken, async (req, res) => {
   try {
-    const people = await Person.findAll();
+    const people = await Person.findAll({
+      include: [{ model: User, where: { groupId: req.user.groupId }, attributes: [] }],
+    });
     res.json(people);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -15,7 +18,10 @@ router.get('/', authenticateToken, async (req, res) => {
 router.post('/', authenticateToken, async (req, res) => {
   try {
     const { name, alias, ageEstimate, gender, description, lastKnownLocation } = req.body;
-    const person = await Person.create({ name, alias, ageEstimate, gender, description, lastKnownLocation });
+    const person = await Person.create({
+      name, alias, ageEstimate, gender, description, lastKnownLocation,
+      userId: req.user.id,
+    });
     res.status(201).json(person);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -25,7 +31,12 @@ router.post('/', authenticateToken, async (req, res) => {
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
     const { name, alias, ageEstimate, gender, description, lastKnownLocation } = req.body;
-    await Person.update({ name, alias, ageEstimate, gender, description, lastKnownLocation }, { where: { id: req.params.id } });
+    const person = await Person.findOne({
+      where: { id: req.params.id },
+      include: [{ model: User, where: { groupId: req.user.groupId } }],
+    });
+    if (!person) return res.status(404).json({ error: 'Person not found' });
+    await person.update({ name, alias, ageEstimate, gender, description, lastKnownLocation });
     res.json({ message: 'Person updated' });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -34,8 +45,15 @@ router.put('/:id', authenticateToken, async (req, res) => {
 
 router.delete('/:id', authenticateToken, async (req, res) => {
   try {
-    await Person.destroy({ where: { id: req.params.id } });
-    res.json({ message: 'Person deleted' });
+    await sequelize.query(
+      `UPDATE Reports SET deletedAt = NOW() WHERE personId = :id AND deletedAt IS NULL`,
+      { replacements: { id: req.params.id } }
+    );
+    await sequelize.query(
+      `UPDATE People SET deletedAt = NOW() WHERE id = :id AND deletedAt IS NULL`,
+      { replacements: { id: req.params.id } }
+    );
+    res.json({ message: 'Person and associated reports deleted' });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
