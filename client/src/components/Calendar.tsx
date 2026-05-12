@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CalendarProps {
@@ -9,12 +10,13 @@ interface CalendarProps {
 }
 
 const Calendar: React.FC<CalendarProps> = ({ selectedDate, onSelectDate, datesWithReports, onClose }) => {
+  const { t } = useTranslation();
   const [viewDate, setViewDate] = useState(new Date(selectedDate));
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
 
-  const monthNames = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-  const dayNames = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const monthNames = t('calendar.months', { returnObjects: true }) as string[];
+  const dayNames = t('calendar.days', { returnObjects: true }) as string[];
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();

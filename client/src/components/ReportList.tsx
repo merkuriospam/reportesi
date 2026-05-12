@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { Clock, MapPin, ClipboardList, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -7,6 +8,7 @@ import Calendar from './Calendar';
 const PAGE_SIZES = [10, 20, 40];
 
 const ReportList: React.FC = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [reports, setReports] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
@@ -98,13 +100,13 @@ const ReportList: React.FC = () => {
   return (
     <div className="max-w-2xl mx-auto pb-10 relative">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-black text-gray-800 tracking-tight">Historial de Recorrida</h2>
+        <h2 className="text-2xl font-black text-gray-800 tracking-tight">{t('history.title')}</h2>
         <div className="flex items-center gap-2">
           {selectedDate && (
             <button
               onClick={clearDate}
               className="p-2.5 rounded-xl bg-gray-100 text-gray-500 hover:bg-gray-200 transition"
-              title="Ver todos"
+              title={t('history.showAll')}
             >
               <X size={20} />
             </button>
@@ -145,7 +147,7 @@ const ReportList: React.FC = () => {
             </button>
           </>
         ) : (
-          <p className="text-sm font-bold text-blue-600">Últimos reportes</p>
+          <p className="text-sm font-bold text-blue-600">{t('history.filterDate')}</p>
         )}
       </div>
 
@@ -160,7 +162,7 @@ const ReportList: React.FC = () => {
                   </div>
                   <div>
                     <button onClick={() => navigate(`/person/${report.personId}`)} className="font-black text-gray-900 leading-tight hover:text-blue-600 transition-colors text-left">
-                      {report.Person?.name || 'Persona Desconocida'}
+                      {report.Person?.name || t('history.unknownPerson')}
                     </button>
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5">
                       <Clock size={12} className="mr-1" /> {formatDate(report.createdAt)}
@@ -173,7 +175,7 @@ const ReportList: React.FC = () => {
               </div>
               
               <div className="bg-gray-50 p-3 rounded-xl mb-4 text-gray-700 text-sm italic leading-relaxed">
-                "{report.comment || 'Sin comentarios adicionales.'}"
+                "{report.comment || t('history.noComments')}"
               </div>
               
               <div className="flex flex-wrap items-center justify-between gap-3">
@@ -192,7 +194,7 @@ const ReportList: React.FC = () => {
                   onClick={() => navigate('/map', { state: { selectedDate: dateParam(new Date(report.createdAt)) } })}
                   className="flex items-center text-xs font-bold text-blue-600 hover:text-indigo-700 transition"
                 >
-                  <MapPin size={16} className="mr-1" /> VER EN MAPA
+                  <MapPin size={16} className="mr-1" /> {t('history.viewMap')}
                 </button>
               </div>
             </div>
@@ -201,7 +203,7 @@ const ReportList: React.FC = () => {
         {!loading && reports.length === 0 && (
           <div className="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-gray-100">
             <ClipboardList size={48} className="mx-auto text-gray-200 mb-4" />
-            <p className="text-gray-400 font-medium">No se han registrado reportes.</p>
+            <p className="text-gray-400 font-medium">{t('history.noReports')}</p>
           </div>
         )}
       </div>
@@ -209,7 +211,7 @@ const ReportList: React.FC = () => {
       {total > 0 && (
         <div className="flex items-center justify-between mt-6 bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-500">Ver</span>
+            <span className="text-xs font-bold text-gray-500">{t('history.view')}</span>
             <select
               className="text-xs font-bold border-0 bg-gray-50 rounded-lg px-2 py-1 outline-none ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500"
               value={pageSize}

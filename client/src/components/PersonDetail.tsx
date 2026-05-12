@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { ArrowLeft, Clock, MapPin, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -6,6 +7,7 @@ import { ArrowLeft, Clock, MapPin, Edit2, Trash2, ChevronLeft, ChevronRight } fr
 const PAGE_SIZES = [10, 20, 40];
 
 const PersonDetail: React.FC = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [person, setPerson] = useState<any>(null);
@@ -46,12 +48,12 @@ const PersonDetail: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (window.confirm('¿Seguro que deseas eliminar a esta persona? También se eliminarán todos sus reportes de asistencia.')) {
+    if (window.confirm(t('person.deleteConfirm'))) {
       try {
         await api.delete(`/people/${person.id}`);
         navigate('/people');
       } catch (err) {
-        alert('Error al eliminar');
+        alert(t('person.deleteError'));
       }
     }
   };
@@ -64,7 +66,7 @@ const PersonDetail: React.FC = () => {
     </div>
   );
 
-  if (!person) return <div className="text-center py-20 text-gray-500">Persona no encontrada.</div>;
+  if (!person) return     <div className="text-center py-20 text-gray-500">{t('person.notFound')}</div>;
 
   return (
     <div className="max-w-4xl mx-auto pb-10">
@@ -72,7 +74,7 @@ const PersonDetail: React.FC = () => {
         onClick={() => navigate('/people')}
         className="flex items-center text-gray-500 hover:text-blue-600 mb-6 transition-colors font-bold text-sm uppercase tracking-wider"
       >
-        <ArrowLeft size={18} className="mr-2" /> Volver al Censo
+        <ArrowLeft size={18} className="mr-2" /> {t('person.backToCensus')}
       </button>
 
       <div className="bg-white rounded-[2.5rem] shadow-xl border border-gray-100 overflow-hidden mb-8">
@@ -90,7 +92,7 @@ const PersonDetail: React.FC = () => {
               </h1>
               <div className="flex flex-wrap gap-2 mt-2">
                 {person.gender && <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-black uppercase rounded-full">{person.gender}</span>}
-                {person.ageEstimate && <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-black uppercase rounded-full">~{person.ageEstimate} años</span>}
+                {person.ageEstimate && <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-black uppercase rounded-full">~{person.ageEstimate} {t('person.yearsOld')}</span>}
               </div>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -113,23 +115,23 @@ const PersonDetail: React.FC = () => {
                 onClick={() => navigate(`/report?personId=${person.id}`)}
                 className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
               >
-                NUEVA VISITA
+                {t('person.newVisit')}
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 border-t border-gray-50 pt-8">
             <div>
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Descripción General</h3>
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">{t('person.description')}</h3>
               <p className="text-gray-700 leading-relaxed italic">
-                {person.description || 'Sin notas adicionales registradas.'}
+                {person.description || t('person.noDescription')}
               </p>
             </div>
             <div>
-              <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">Ubicación Frecuente</h3>
+                <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-3">{t('person.frequentLocation')}</h3>
               <div className="flex items-center text-gray-700 font-medium">
                 <MapPin size={20} className="text-red-500 mr-2 shrink-0" />
-                {person.lastKnownLocation || 'No especificada.'}
+                {person.lastKnownLocation || t('person.locationNotSet')}
               </div>
             </div>
           </div>
@@ -137,7 +139,7 @@ const PersonDetail: React.FC = () => {
       </div>
 
       <h2 className="text-xl font-black text-gray-800 mb-6 flex items-center">
-        <Clock className="mr-2 text-blue-500" /> Historial de Asistencias
+        <Clock className="mr-2 text-blue-500" /> {t('person.historyTitle')}
       </h2>
 
       <div className="space-y-4">
@@ -156,7 +158,7 @@ const PersonDetail: React.FC = () => {
                 {report.urgency}
               </span>
             </div>
-            <p className="text-gray-700 text-sm mb-4 italic">"{report.comment || 'Sin comentarios.'}"</p>
+            <p className="text-gray-700 text-sm mb-4 italic">"{report.comment || t('person.noComments')}"</p>
             <div className="flex justify-between items-center">
               <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${
                 report.status === 'Resuelto' ? 'bg-green-100 text-green-700' :
@@ -173,14 +175,14 @@ const PersonDetail: React.FC = () => {
                 }}
                 className="text-xs font-bold text-blue-600 flex items-center hover:underline"
               >
-                <MapPin size={14} className="mr-1" /> VER MAPA
+                <MapPin size={14} className="mr-1" /> {t('person.viewMap')}
               </button>
             </div>
           </div>
         ))}
         {reports.length === 0 && (
           <div className="bg-gray-50 rounded-3xl p-10 text-center border-2 border-dashed border-gray-200">
-            <p className="text-gray-400 font-medium">Esta persona aún no tiene reportes de asistencia.</p>
+            <p className="text-gray-400 font-medium">{t('person.noReports')}</p>
           </div>
         )}
       </div>

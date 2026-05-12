@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
 import { ClipboardList } from 'lucide-react';
@@ -8,6 +9,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -21,7 +23,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       onLogin(response.data.token);
       window.location.href = '/';
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión');
+      setError(err.response?.data?.error || t('auth.loginError'));
     } finally {
       setLoading(false);
     }
@@ -36,30 +38,30 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           <div className="w-16 h-16 bg-blue-600 rounded-2xl mx-auto flex items-center justify-center text-white shadow-lg mb-4 rotate-3">
             <ClipboardList size={32} />
           </div>
-          <h2 className="text-3xl font-black text-gray-800 tracking-tight">Bienvenido</h2>
-          <p className="text-gray-400 font-medium mt-1">Acceso para Voluntarios</p>
+          <h2 className="text-3xl font-black text-gray-800 tracking-tight">{t('auth.welcome')}</h2>
+          <p className="text-gray-400 font-medium mt-1">{t('auth.subtitle')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">
-            <label className="text-sm font-bold text-gray-700 ml-1">Usuario</label>
+            <label className="text-sm font-bold text-gray-700 ml-1">{t('auth.username')}</label>
             <input
               type="text"
               className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none transition"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Tu nombre de usuario"
+              placeholder={t('auth.usernamePlaceholder')}
               required
             />
           </div>
           <div className="space-y-1">
-            <label className="text-sm font-bold text-gray-700 ml-1">Contraseña</label>
+            <label className="text-sm font-bold text-gray-700 ml-1">{t('auth.password')}</label>
             <input
               type="password"
               className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-600 outline-none transition"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholder')}
               required
             />
           </div>
@@ -75,12 +77,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             disabled={loading}
             className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-4 rounded-2xl font-black text-lg shadow-xl shadow-blue-100 hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
           >
-            {loading ? 'INGRESANDO...' : 'ENTRAR'}
+            {loading ? t('auth.loggingIn') : t('auth.login')}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-gray-400 font-medium">
-          ¿No tienes cuenta? <Link to="/register" className="text-blue-600 font-bold hover:underline">Regístrate aquí</Link>
+          {t('auth.noAccount')} <Link to="/register" className="text-blue-600 font-bold hover:underline">{t('auth.registerHere')}</Link>
         </p>
       </div>
     </div>

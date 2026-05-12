@@ -1,6 +1,8 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { X, LayoutDashboard, ClipboardList, History, Users, Map, LogOut } from 'lucide-react';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -9,14 +11,15 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
+  const { t } = useTranslation();
   const location = useLocation();
 
   const navItems = [
-    { to: '/', icon: LayoutDashboard, label: 'Inicio' },
-    { to: '/map', icon: Map, label: 'Mapa' },
-    { to: '/report', icon: ClipboardList, label: 'Visitar' },
-    { to: '/history', icon: History, label: 'Historial' },
-    { to: '/people', icon: Users, label: 'Censo' },
+    { to: '/', icon: LayoutDashboard, label: t('nav.home') },
+    { to: '/map', icon: Map, label: t('nav.map') },
+    { to: '/report', icon: ClipboardList, label: t('nav.visit') },
+    { to: '/history', icon: History, label: t('nav.history') },
+    { to: '/people', icon: Users, label: t('nav.census') },
   ];
 
   return (
@@ -34,7 +37,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
         }`}
       >
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
-          <h2 className="text-xl font-black text-gray-900 tracking-tight">Menú</h2>
+          <h2 className="text-xl font-black text-gray-900 tracking-tight">{t('nav.menu')}</h2>
           <button
             onClick={onClose}
             className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
@@ -64,17 +67,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
           })}
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-100">
-          <button
-            onClick={() => {
-              onLogout();
-              onClose();
-            }}
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm text-red-500 hover:bg-red-50 transition-all w-full"
-          >
-            <LogOut size={20} />
-            Salir
-          </button>
+        <div className="border-t border-gray-100">
+          <LanguageSwitcher />
+          <div className="p-4 pt-0">
+            <button
+              onClick={() => {
+                onLogout();
+                onClose();
+              }}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl font-bold text-sm text-red-500 hover:bg-red-50 transition-all w-full"
+            >
+              <LogOut size={20} />
+              {t('nav.logout')}
+            </button>
+          </div>
         </div>
       </div>
     </>

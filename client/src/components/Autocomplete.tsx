@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Users, Edit2, X } from 'lucide-react';
 
 interface Person {
@@ -15,6 +16,7 @@ interface AutocompleteProps {
 }
 
 const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, onEdit }) => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, on
           <input
             type="text"
             className="w-full p-4 pl-10 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-lg font-medium"
-            placeholder="Buscar persona por nombre o alias..."
+            placeholder={t('report.personPlaceholder')}
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
@@ -85,7 +87,7 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, on
           {open && (
             <div className="absolute z-50 left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-gray-200 max-h-60 overflow-y-auto">
               {filtered.length === 0 ? (
-                <div className="p-4 text-gray-400 text-sm text-center">Sin resultados</div>
+                <div className="p-4 text-gray-400 text-sm text-center">{t('report.noResults')}</div>
               ) : (
                 filtered.map(p => (
                   <button

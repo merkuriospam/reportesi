@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Autocomplete from './Autocomplete';
 import { MapPin, CheckCircle } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const ReportForm: React.FC = () => {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [people, setPeople] = useState<any[]>([]);
@@ -68,7 +70,7 @@ const ReportForm: React.FC = () => {
         urgency,
         status
       });
-      setMessage('Reporte enviado correctamente');
+      setMessage(t('report.success'));
       setPersonId('');
       setComment('');
       setUrgency('Media');
@@ -87,12 +89,12 @@ const ReportForm: React.FC = () => {
         
         <h2 className="text-2xl font-black mb-6 flex items-center text-gray-800 tracking-tight">
           <MapPin className="mr-3 text-red-500 animate-bounce" size={28} /> 
-          Nueva Visita
+          {t('report.title')}
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
-            <label className="text-sm font-bold text-gray-700 ml-1">Persona Asistida</label>
+            <label className="text-sm font-bold text-gray-700 ml-1">{t('report.personLabel')}</label>
             <Autocomplete
               people={people}
               value={personId}
@@ -103,40 +105,40 @@ const ReportForm: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-sm font-bold text-gray-700 ml-1">Nivel de Urgencia</label>
+              <label className="text-sm font-bold text-gray-700 ml-1">{t('report.urgencyLabel')}</label>
               <select
                 className="w-full p-3 bg-gray-50 border-0 rounded-xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                 value={urgency}
                 onChange={(e) => setUrgency(e.target.value)}
               >
-                <option value="Baja">Baja</option>
-                <option value="Media">Media</option>
-                <option value="Alta">Alta</option>
-                <option value="Crítica">Crítica 🆘</option>
+                <option value="Baja">{t('report.urgencyLow')}</option>
+                <option value="Media">{t('report.urgencyMedium')}</option>
+                <option value="Alta">{t('report.urgencyHigh')}</option>
+                <option value="Crítica">{t('report.urgencyCritical')} 🆘</option>
               </select>
             </div>
             <div className="space-y-1">
-              <label className="text-sm font-bold text-gray-700 ml-1">Estado Inicial</label>
+              <label className="text-sm font-bold text-gray-700 ml-1">{t('report.statusLabel')}</label>
               <select
                 className="w-full p-3 bg-gray-50 border-0 rounded-xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none"
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <option value="Pendiente">Pendiente</option>
-                <option value="Atendido">Ya atendido</option>
-                <option value="Derivado">Derivado</option>
-                <option value="Resuelto">Resuelto</option>
+                <option value="Pendiente">{t('report.statusPending')}</option>
+                <option value="Atendido">{t('report.statusAttended')}</option>
+                <option value="Derivado">{t('report.statusReferred')}</option>
+                <option value="Resuelto">{t('report.statusResolved')}</option>
               </select>
             </div>
           </div>
 
           <div className="space-y-1">
-            <label className="text-sm font-bold text-gray-700 ml-1">Observaciones / Hallazgos</label>
+            <label className="text-sm font-bold text-gray-700 ml-1">{t('report.commentLabel')}</label>
             <textarea
               className="w-full p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition min-h-[140px]"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="¿Cómo se encuentra la persona? ¿Necesitó abrigo, comida, salud?"
+              placeholder={t('report.commentPlaceholder')}
             />
           </div>
 
@@ -144,9 +146,9 @@ const ReportForm: React.FC = () => {
             <div className="flex items-center text-sm font-semibold">
               <MapPin size={20} className="mr-2 text-blue-500" />
               {location ? (
-                <span className="text-green-600">Ubicación fijada correctamente</span>
+                <span className="text-green-600">{t('report.locationFixed')}</span>
               ) : (
-                <span className="text-gray-400 animate-pulse">Obteniendo coordenadas GPS...</span>
+                <span className="text-gray-400 animate-pulse">{t('report.locationGetting')}</span>
               )}
             </div>
             {location && (
@@ -171,7 +173,7 @@ const ReportForm: React.FC = () => {
                 : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-200'
             }`}
           >
-            {loading ? 'Procesando...' : 'REGISTRAR VISITA'}
+            {loading ? t('report.processing') : t('report.submitButton')}
           </button>
         </form>
       </div>

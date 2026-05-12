@@ -2,6 +2,7 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import React, { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.markercluster';
@@ -48,6 +49,7 @@ const MapController: React.FC<{ onReady: (map: L.Map) => void }> = ({ onReady })
 };
 
 const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
+  const { t, i18n } = useTranslation();
   const map = useMap();
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
 
@@ -70,19 +72,22 @@ const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
         icon: getUrgencyIcon(report.urgency),
       });
 
+      const timeStr = new Date(report.createdAt).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' });
+      const unknownName = t('map.unknownPerson');
+      const viewProfileText = t('map.viewProfile');
       marker.bindPopup(`
         <div class="min-w-[200px]">
           <div class="flex items-center gap-2 mb-2">
             <div class="w-3 h-3 rounded-full" style="background-color: ${color}"></div>
-            <h4 class="font-bold text-gray-900">${report.Person?.name || 'Desconocido'}</h4>
+            <h4 class="font-bold text-gray-900">${report.Person?.name || unknownName}</h4>
           </div>
           <p class="text-xs text-gray-500 mb-2">
-            ${new Date(report.createdAt).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+            ${timeStr}
           </p>
           ${report.comment ? `<p class="text-sm text-gray-700 italic mb-2">"${report.comment}"</p>` : ''}
           <button onclick="window.__navigateToPerson(${report.personId})" class="w-full mb-2 flex items-center justify-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 rounded-lg transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            Ver perfil
+            ${viewProfileText}
           </button>
           <div class="flex gap-2">
             <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">${report.urgency}</span>
@@ -113,6 +118,7 @@ const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
 };
 
 const MapReport: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [selectedDate, setSelectedDate] = useState(() => {
     if (location.state?.selectedDate) {
@@ -169,7 +175,7 @@ const MapReport: React.FC = () => {
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('es-AR', {
+    return date.toLocaleDateString(i18n.language === 'en' ? 'en-US' : i18n.language === 'pt' ? 'pt-BR' : 'es-AR', {
       weekday: 'long',
       day: 'numeric',
       month: 'long',
@@ -191,7 +197,7 @@ const MapReport: React.FC = () => {
     <div className="relative h-[calc(100vh-120px)] rounded-2xl overflow-hidden shadow-sm border border-gray-100">
       <div className="absolute top-4 left-4 z-[1000] flex items-center gap-3">
         <div>
-          <h1 className="text-xl font-black text-gray-900 drop-shadow-md">Mapa de Reportes</h1>
+          <h1 className="text-xl font-black text-gray-900 drop-shadow-md">{t('map.title')}</h1>
           <p className="text-xs text-gray-600 font-medium capitalize drop-shadow-sm">{formatDate(selectedDate)}</p>
         </div>
       </div>
@@ -209,7 +215,7 @@ const MapReport: React.FC = () => {
         </button>
         <div className="bg-white px-3 py-2 rounded-xl shadow-lg border border-gray-100">
           <p className="text-xs font-bold text-gray-500">
-            {loading ? '...' : `${reports.length} ${reports.length === 1 ? 'reporte' : 'reportes'}`}
+            {loading ? '...' : `${reports.length} ${reports.length === 1 ? t('map.report') : t('map.reports')}`}
           </p>
         </div>
       </div>
