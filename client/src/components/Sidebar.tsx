@@ -14,7 +14,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onLogout }) => {
   const navItems = [
     { to: '/', icon: LayoutDashboard, label: 'Inicio' },
     { to: '/map', icon: Map, label: 'Mapa' },
-    { to: '/report', icon: ClipboardList, label: 'Reportar' },
+    { to: '/report', icon: ClipboardList, label: 'Visitar' },
     { to: '/history', icon: History, label: 'Historial' },
     { to: '/people', icon: Users, label: 'Censo' },
   ];

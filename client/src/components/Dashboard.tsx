@@ -133,13 +133,13 @@ const Dashboard: React.FC = () => {
           <TrendingUp size={200} />
         </div>
         <div className="relative z-10">
-          <h2 className="text-2xl font-black mb-2 leading-tight">Misión Nocturna</h2>
+          <h2 className="text-2xl font-black mb-2 leading-tight">Recorrida</h2>
           <p className="text-blue-100 font-medium mb-6 max-w-sm">
             Cada reporte ayuda a mapear las necesidades reales y coordinar la asistencia efectiva.
           </p>
           <div className="flex gap-4">
             <button onClick={() => navigate('/report')} className="bg-white text-blue-700 px-6 py-3 rounded-2xl font-black text-sm shadow-lg hover:scale-105 transition-transform active:scale-95">
-              REPORTAR
+              VISITAR
             </button>
           </div>
         </div>

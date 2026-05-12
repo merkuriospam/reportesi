@@ -87,7 +87,7 @@ const ReportForm: React.FC = () => {
         
         <h2 className="text-2xl font-black mb-6 flex items-center text-gray-800 tracking-tight">
           <MapPin className="mr-3 text-red-500 animate-bounce" size={28} /> 
-          Nuevo Reporte Nocturno
+          Nueva Visita
         </h2>
         
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -171,7 +171,7 @@ const ReportForm: React.FC = () => {
                 : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-200'
             }`}
           >
-            {loading ? 'Procesando...' : 'REGISTRAR HALLAZGO'}
+            {loading ? 'Procesando...' : 'REGISTRAR VISITA'}
           </button>
         </form>
       </div>
