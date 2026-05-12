@@ -1,10 +1,90 @@
+import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet.markercluster';
 import api from '../services/api';
 import { ArrowLeft, Clock, MapPin, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+const getUrgencyColor = (urgency: string) => {
+  switch (urgency) {
+    case 'Crítica': return '#ef4444';
+    case 'Alta': return '#f97316';
+    case 'Media': return '#3b82f6';
+    default: return '#6b7280';
+  }
+};
+
+const getUrgencyIcon = (urgency: string) => {
+  const color = getUrgencyColor(urgency);
+  return L.divIcon({
+    className: '',
+    html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+  });
+};
+
 const PAGE_SIZES = [10, 20, 40];
+
+const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const mcg = L.markerClusterGroup({
+      chunkedLoading: true,
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+    });
+
+    reports.forEach((report) => {
+      const marker = L.marker([parseFloat(report.latitude), parseFloat(report.longitude)], {
+        icon: getUrgencyIcon(report.urgency),
+      });
+
+      const timeStr = new Date(report.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      marker.bindPopup(`
+        <div class="min-w-[150px]">
+          <div class="flex items-center gap-2 mb-1">
+            <div class="w-2.5 h-2.5 rounded-full" style="background-color: ${getUrgencyColor(report.urgency)}"></div>
+            <span class="font-bold text-gray-900 text-xs">${report.urgency}</span>
+          </div>
+          <p class="text-[10px] text-gray-500 mb-1">${timeStr}</p>
+          ${report.comment ? `<p class="text-xs text-gray-700 italic">"${report.comment}"</p>` : ''}
+          <p class="text-[10px] text-gray-400 mt-1">${report.status}</p>
+        </div>
+      `);
+
+      mcg.addLayer(marker);
+    });
+
+    map.addLayer(mcg);
+
+    if (reports.length > 0) {
+      map.fitBounds(mcg.getBounds(), { padding: [40, 40], maxZoom: 16 });
+    }
+
+    return () => {
+      map.removeLayer(mcg);
+    };
+  }, [reports, map]);
+
+  return null;
+};
 
 const PersonDetail: React.FC = () => {
   const { t } = useTranslation();
@@ -198,6 +278,26 @@ const PersonDetail: React.FC = () => {
               </g>
             ))}
           </svg>
+        </div>
+      )}
+
+      {allReports.some(r => r.latitude && r.longitude) && (
+        <div className="mb-8 bg-white rounded-[2.5rem] shadow-xl border border-gray-100 p-6">
+          <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{t('person.mapTitle')}</h3>
+          <div className="h-64 rounded-xl overflow-hidden">
+            <MapContainer
+              center={[parseFloat(allReports.find(r => r.latitude)!.latitude), parseFloat(allReports.find(r => r.latitude)!.longitude)]}
+              zoom={14}
+              style={{ height: '100%', width: '100%' }}
+              scrollWheelZoom={false}
+            >
+              <TileLayer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              />
+              <ClusterLayer reports={allReports.filter(r => r.latitude && r.longitude)} />
+            </MapContainer>
+          </div>
         </div>
       )}
 

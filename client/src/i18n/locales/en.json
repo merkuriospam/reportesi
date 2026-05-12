@@ -92,7 +92,8 @@
     "deleteError": "Error deleting",
     "notFound": "Person not found.",
     "yearsOld": "years",
-    "chartTitle": "Visit Evolution"
+    "chartTitle": "Visit Evolution",
+    "mapTitle": "Visit Locations"
   },
   "people": {
     "title": "People Census",

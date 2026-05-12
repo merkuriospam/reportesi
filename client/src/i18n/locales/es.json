@@ -92,7 +92,8 @@
     "deleteError": "Error al eliminar",
     "notFound": "Persona no encontrada.",
     "yearsOld": "años",
-    "chartTitle": "Evolución de Visitas"
+    "chartTitle": "Evolución de Visitas",
+    "mapTitle": "Ubicación de Visitas"
   },
   "people": {
     "title": "Censo de Personas",
