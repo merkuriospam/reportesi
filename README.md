@@ -57,3 +57,6 @@ La aplicación estará disponible en `http://localhost:5173`.
 
 - **Frontend**: React, Vite, Tailwind CSS, Lucide Icons, Axios.
 - **Backend**: Node.js, Express, Sequelize, MariaDB, JWT, Bcrypt.
+
+  Session   Revisar AGENT.md
+  Continue  opencode -s ses_1edf76031ffemMXWNkpHqwUctg

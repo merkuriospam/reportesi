@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
-import { MapPin, CheckCircle, Users, Edit2 } from 'lucide-react';
+import Autocomplete from './Autocomplete';
+import { MapPin, CheckCircle } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 const ReportForm: React.FC = () => {
@@ -14,7 +15,6 @@ const ReportForm: React.FC = () => {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchPeople();
@@ -34,13 +34,6 @@ const ReportForm: React.FC = () => {
       console.error('Error fetching people', err);
     }
   };
-
-  const selectedPerson = people.find(p => p.id.toString() === personId);
-
-  const filteredPeople = people.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (p.alias && p.alias.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
 
   const getLocation = () => {
     if (navigator.geolocation) {
@@ -89,7 +82,7 @@ const ReportForm: React.FC = () => {
 
   return (
     <div className="max-w-xl mx-auto pb-10">
-      <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative">
+      <div className="bg-white p-6 rounded-3xl shadow-xl border border-gray-100 relative">
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
         
         <h2 className="text-2xl font-black mb-6 flex items-center text-gray-800 tracking-tight">
@@ -100,44 +93,12 @@ const ReportForm: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-3">
             <label className="text-sm font-bold text-gray-700 ml-1">Persona Asistida</label>
-            <div className="relative">
-              <input
-                type="text"
-                className="w-full p-3 pl-10 mb-2 bg-gray-50 border-0 rounded-xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-sm"
-                placeholder="Filtrar por nombre o alias..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <Users className="absolute left-3 top-3 text-gray-400" size={18} />
-            </div>
-            
-            <div className="flex gap-2">
-              <select
-                className="flex-1 p-4 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-lg font-medium"
-                value={personId}
-                onChange={(e) => setPersonId(e.target.value)}
-                required
-              >
-                <option value="">Seleccionar de la lista...</option>
-                {filteredPeople.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} {p.alias ? `("${p.alias}")` : ''}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                onClick={() => navigate('/people', { state: { editPerson: selectedPerson } })}
-                disabled={!selectedPerson}
-                className={`p-4 rounded-2xl transition-all flex items-center justify-center ${
-                  selectedPerson
-                    ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 ring-1 ring-blue-200'
-                    : 'bg-gray-50 text-gray-300 cursor-not-allowed ring-1 ring-gray-200'
-                }`}
-              >
-                <Edit2 size={20} />
-              </button>
-            </div>
+            <Autocomplete
+              people={people}
+              value={personId}
+              onChange={setPersonId}
+              onEdit={(person) => navigate('/people', { state: { editPerson: person } })}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
