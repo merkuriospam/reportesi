@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-  // baseURL: 'http://localhost:3001/api',
-  baseURL: 'https://reportesi.plopi.com.ar/api',
+  baseURL: 'http://localhost:3001/api',
+  // baseURL: 'https://reportesi.plopi.com.ar/api',
 });
 
 api.interceptors.request.use((config) => {

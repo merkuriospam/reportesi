@@ -60,12 +60,12 @@
     "urgencyMedium": "Média",
     "urgencyHigh": "Alta",
     "urgencyCritical": "Crítica",
-    "statusLabel": "Estado Inicial",
+    "statusLabel": "Estado",
     "statusPending": "Pendente",
     "statusAttended": "Atendido",
     "statusReferred": "Encaminhado",
     "statusResolved": "Resolvido",
-    "commentLabel": "Observações / Achados",
+    "commentLabel": "Observações",
     "commentPlaceholder": "Como está a pessoa? Precisa de abrigo, comida, saúde?",
     "locationFixed": "Localização registrada com sucesso",
     "locationGetting": "Obtendo coordenadas GPS...",
@@ -80,7 +80,7 @@
     "noDescription": "Nenhuma nota adicional registrada.",
     "frequentLocation": "Localização Frequente",
     "locationNotSet": "Não especificada.",
-    "historyTitle": "Histórico de Atendimentos",
+    "historyTitle": "Histórico de Visitas",
     "noComments": "Sem comentários.",
     "viewMap": "VER MAPA",
     "noReports": "Esta pessoa ainda não tem relatórios de atendimento.",
@@ -91,7 +91,8 @@
     "deleteConfirm": "Tem certeza que deseja excluir esta pessoa? Todos os seus relatórios de atendimento também serão excluídos.",
     "deleteError": "Erro ao excluir",
     "notFound": "Pessoa não encontrada.",
-    "yearsOld": "anos"
+    "yearsOld": "anos",
+    "chartTitle": "Evolução de Visitas"
   },
   "people": {
     "title": "Censo de Pessoas",

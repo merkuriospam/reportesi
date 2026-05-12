@@ -60,12 +60,12 @@
     "urgencyMedium": "Media",
     "urgencyHigh": "Alta",
     "urgencyCritical": "Crítica",
-    "statusLabel": "Estado Inicial",
+    "statusLabel": "Estado",
     "statusPending": "Pendiente",
     "statusAttended": "Ya atendido",
     "statusReferred": "Derivado",
     "statusResolved": "Resuelto",
-    "commentLabel": "Observaciones / Hallazgos",
+    "commentLabel": "Observaciones",
     "commentPlaceholder": "¿Cómo se encuentra la persona? ¿Necesitó abrigo, comida, salud?",
     "locationFixed": "Ubicación fijada correctamente",
     "locationGetting": "Obteniendo coordenadas GPS...",
@@ -80,7 +80,7 @@
     "noDescription": "Sin notas adicionales registradas.",
     "frequentLocation": "Ubicación Frecuente",
     "locationNotSet": "No especificada.",
-    "historyTitle": "Historial de Asistencias",
+    "historyTitle": "Historial de Visitas",
     "noComments": "Sin comentarios.",
     "viewMap": "VER MAPA",
     "noReports": "Esta persona aún no tiene reportes de asistencia.",
@@ -91,7 +91,8 @@
     "deleteConfirm": "¿Seguro que deseas eliminar a esta persona? También se eliminarán todos sus reportes de asistencia.",
     "deleteError": "Error al eliminar",
     "notFound": "Persona no encontrada.",
-    "yearsOld": "años"
+    "yearsOld": "años",
+    "chartTitle": "Evolución de Visitas"
   },
   "people": {
     "title": "Censo de Personas",

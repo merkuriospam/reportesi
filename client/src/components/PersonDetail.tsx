@@ -12,13 +12,19 @@ const PersonDetail: React.FC = () => {
   const navigate = useNavigate();
   const [person, setPerson] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
+  const [allReports, setAllReports] = useState<any[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setReports([]);
+    setAllReports([]);
+    setPage(0);
+    setLoading(true);
     fetchPerson();
+    fetchAllReports();
   }, [id]);
 
   useEffect(() => {
@@ -32,6 +38,15 @@ const PersonDetail: React.FC = () => {
       setPerson(p);
     } catch (err) {
       console.error('Error fetching person', err);
+    }
+  };
+
+  const fetchAllReports = async () => {
+    try {
+      const res = await api.get(`/reports/person/${id}?limit=1000&offset=0`);
+      setAllReports(res.data.data);
+    } catch (err) {
+      console.error('Error fetching all reports', err);
     }
   };
 
@@ -59,6 +74,36 @@ const PersonDetail: React.FC = () => {
   };
 
   const totalPages = Math.ceil(total / pageSize);
+
+  const URG_VAL: Record<string, number> = { Baja: 1, Media: 3, Alta: 5, 'Crítica': 8 };
+
+  const sortedReports = React.useMemo(() =>
+    [...allReports].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
+    [allReports]
+  );
+
+  const chart = React.useMemo(() => {
+    if (sortedReports.length < 2) return null;
+    const W = 700, H = 140, PT = 12, PR = 16, PB = 36, PL = 60;
+    const PW = W - PL - PR, PH = H - PT - PB, MAX = 9;
+    const points = sortedReports.map((r, i) => ({
+      x: PL + (i / (sortedReports.length - 1)) * PW,
+      y: PT + PH - (URG_VAL[r.urgency] || 0) / MAX * PH,
+      urgency: r.urgency,
+      date: new Date(r.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+    }));
+    const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const yLabels = [
+      { label: 'Crítica', val: 8 },
+      { label: 'Alta', val: 5 },
+      { label: 'Media', val: 3 },
+      { label: 'Baja', val: 1 },
+    ].map(v => ({
+      label: v.label,
+      y: PT + PH - (v.val / MAX) * PH,
+    }));
+    return { points, path, yLabels, W, H, PT, PR, PB, PL, PW, PH };
+  }, [sortedReports]);
 
   if (loading) return (
     <div className="flex justify-center items-center h-64">
@@ -137,6 +182,24 @@ const PersonDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {chart && (
+        <div className="mb-8 bg-white rounded-[2.5rem] shadow-xl border border-gray-100 p-6">
+          <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">{t('person.chartTitle')}</h3>
+          <svg viewBox={`0 0 ${chart.W} ${chart.H}`} className="w-full h-auto">
+            {chart.yLabels.map(yl => (
+              <text key={yl.label} x={chart.PL - 8} y={yl.y} fill="#9CA3AF" fontSize={10} fontFamily="inherit" textAnchor="end" dominantBaseline="middle">{yl.label}</text>
+            ))}
+            <path d={chart.path} fill="none" stroke="#93C5FD" strokeWidth={2} strokeLinejoin="round" />
+            {chart.points.map((p, i) => (
+              <g key={i}>
+                <circle cx={p.x} cy={p.y} r={6} fill="#3B82F6" stroke="white" strokeWidth={2} />
+                <text x={p.x} y={chart.H - chart.PB + 16} fill="#9CA3AF" fontSize={9} fontFamily="inherit" textAnchor="middle">{p.date}</text>
+              </g>
+            ))}
+          </svg>
+        </div>
+      )}
 
       <h2 className="text-xl font-black text-gray-800 mb-6 flex items-center">
         <Clock className="mr-2 text-blue-500" /> {t('person.historyTitle')}
