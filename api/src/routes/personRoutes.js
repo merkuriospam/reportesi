@@ -10,6 +10,14 @@ router.get('/', authenticateToken, async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
     const { count, rows } = await Person.findAndCountAll({
       include: [{ model: User, where: { groupId: req.user.groupId }, attributes: [] }],
+      attributes: {
+        include: [
+          [sequelize.literal(`(SELECT COUNT(*) FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL)`), 'visitCount'],
+          [sequelize.literal(`(SELECT urgency FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.createdAt DESC LIMIT 1)`), 'lastUrgency'],
+          [sequelize.literal(`(SELECT status FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.createdAt DESC LIMIT 1)`), 'lastStatus'],
+          [sequelize.literal(`(SELECT createdAt FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.createdAt DESC LIMIT 1)`), 'lastVisitDate'],
+        ],
+      },
       limit,
       offset,
     });

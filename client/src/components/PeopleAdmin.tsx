@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { UserPlus, X, Check, Users, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { UserPlus, X, Check, Users, MapPin, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const PAGE_SIZES = [10, 20, 40];
 
@@ -234,6 +234,36 @@ const PeopleAdmin: React.FC = () => {
               {p.gender && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded-md tracking-wider">{p.gender}</span>}
               {p.ageEstimate && <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] uppercase font-bold rounded-md tracking-wider">~{p.ageEstimate} {t('person.yearsOld')}</span>}
             </div>
+
+            {p.visitCount > 0 && (
+              <div className="mt-3 pt-3 border-t border-gray-50 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">{p.visitCount} visitas</span>
+                  <span className="text-[10px] text-gray-400 flex items-center">
+                    <Clock size={10} className="mr-1" />
+                    {new Date(p.lastVisitDate).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                  </span>
+                </div>
+                <div className="flex gap-1.5">
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                    p.lastUrgency === 'Crítica' ? 'bg-red-100 text-red-700' :
+                    p.lastUrgency === 'Alta' ? 'bg-orange-100 text-orange-700' :
+                    p.lastUrgency === 'Media' ? 'bg-amber-100 text-amber-700' :
+                    'bg-blue-100 text-blue-700'
+                  }`}>
+                    {p.lastUrgency}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                    p.lastStatus === 'Resuelto' ? 'bg-green-100 text-green-700' :
+                    p.lastStatus === 'Atendido' ? 'bg-blue-100 text-blue-700' :
+                    p.lastStatus === 'Derivado' ? 'bg-purple-100 text-purple-700' :
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {p.lastStatus}
+                  </span>
+                </div>
+              </div>
+            )}
 
             {p.lastKnownLocation && (
               <p className="text-gray-500 text-xs mt-3 flex items-start italic">
