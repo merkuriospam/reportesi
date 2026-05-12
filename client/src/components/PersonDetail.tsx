@@ -83,9 +83,9 @@ const PersonDetail: React.FC = () => {
         </div>
         
         <div className="pt-16 pb-8 px-8">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-3xl font-black text-gray-900 tracking-tight">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
+            <div className="min-w-0">
+              <h1 className="text-3xl font-black text-gray-900 tracking-tight break-words">
                 {person.name} {person.alias && <span className="text-gray-400 font-normal ml-2">("{person.alias}")</span>}
               </h1>
               <div className="flex flex-wrap gap-2 mt-2">
@@ -93,7 +93,7 @@ const PersonDetail: React.FC = () => {
                 {person.ageEstimate && <span className="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-black uppercase rounded-full">~{person.ageEstimate} años</span>}
               </div>
             </div>
-            <div className="flex flex-wrap items-center justify-end gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => navigate('/people', { state: { editPerson: person } })}
                 className="p-3 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all"
@@ -111,9 +111,9 @@ const PersonDetail: React.FC = () => {
               </button>
               <button 
                 onClick={() => navigate(`/report?personId=${person.id}`)}
-                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition-all"
+                className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 hover:scale-105 active:scale-95 transition-all whitespace-nowrap"
               >
-                NUEVO REPORTE
+                NUEVA VISITA
               </button>
             </div>
           </div>
