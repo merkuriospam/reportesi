@@ -32,11 +32,20 @@ const Dashboard: React.FC = () => {
       const allReports = reportsRes.data.data;
       setReports(allReports);
       
+      const latestPerPerson = new Map<number, any>();
+      for (const r of allReports) {
+        const prev = latestPerPerson.get(r.personId);
+        if (!prev || new Date(r.createdAt) > new Date(prev.createdAt)) {
+          latestPerPerson.set(r.personId, r);
+        }
+      }
+      const latestReports = [...latestPerPerson.values()];
+
       setStats({
         totalPeople: people.length,
         totalReports: allReports.length,
-        criticalReports: allReports.filter((r: any) => r.urgency === 'Crítica').length,
-        attendedReports: allReports.filter((r: any) => r.status === 'Atendido').length,
+        criticalReports: latestReports.filter((r: any) => r.urgency === 'Crítica' && r.status !== 'Resuelto').length,
+        attendedReports: latestReports.filter((r: any) => r.status === 'Resuelto').length,
       });
     } catch (err) {
       console.error('Error fetching stats', err);
@@ -61,8 +70,15 @@ const Dashboard: React.FC = () => {
   }, [reports]);
 
   const urgentReports = useMemo(() => {
-    return reports.filter((r: any) =>
-      r.status === 'Pendiente' && (r.urgency === 'Alta' || r.urgency === 'Crítica')
+    const latest = new Map<number, any>();
+    for (const r of reports) {
+      const prev = latest.get(r.personId);
+      if (!prev || new Date(r.createdAt) > new Date(prev.createdAt)) {
+        latest.set(r.personId, r);
+      }
+    }
+    return [...latest.values()].filter((r: any) =>
+      r.status !== 'Resuelto' && (r.urgency === 'Alta' || r.urgency === 'Crítica')
     );
   }, [reports]);
 

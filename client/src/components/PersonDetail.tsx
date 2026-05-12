@@ -159,7 +159,8 @@ const PersonDetail: React.FC = () => {
             <p className="text-gray-700 text-sm mb-4 italic">"{report.comment || 'Sin comentarios.'}"</p>
             <div className="flex justify-between items-center">
               <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${
-                report.status === 'Atendido' ? 'bg-green-100 text-green-700' : 
+                report.status === 'Resuelto' ? 'bg-green-100 text-green-700' :
+                report.status === 'Atendido' ? 'bg-blue-100 text-blue-700' : 
                 'bg-yellow-100 text-yellow-700'
               }`}>
                 {report.status}

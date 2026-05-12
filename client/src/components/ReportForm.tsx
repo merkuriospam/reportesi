@@ -125,6 +125,7 @@ const ReportForm: React.FC = () => {
                 <option value="Pendiente">Pendiente</option>
                 <option value="Atendido">Ya atendido</option>
                 <option value="Derivado">Derivado</option>
+                <option value="Resuelto">Resuelto</option>
               </select>
             </div>
           </div>

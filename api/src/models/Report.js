@@ -23,7 +23,7 @@ const Report = sequelize.define('Report', {
     defaultValue: 'Media',
   },
   status: {
-    type: DataTypes.ENUM('Pendiente', 'Atendido', 'Derivado'),
+    type: DataTypes.ENUM('Pendiente', 'Atendido', 'Derivado', 'Resuelto'),
     defaultValue: 'Pendiente',
   },
   comment: {

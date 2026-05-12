@@ -2,10 +2,12 @@
   "name": "api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/indexReporteSi.js",
   "scripts": {
     "start": "node src/indexReporteSi.js",
     "seed": "node src/seed.js",
+    "seed:structure": "node src/seed.js structure",
+    "seed:data": "node src/seed.js data",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

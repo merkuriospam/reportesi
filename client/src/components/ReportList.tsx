@@ -179,7 +179,8 @@ const ReportList: React.FC = () => {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center space-x-2">
                   <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${
-                    report.status === 'Atendido' ? 'bg-green-100 text-green-700' : 
+                    report.status === 'Resuelto' ? 'bg-green-100 text-green-700' :
+                    report.status === 'Atendido' ? 'bg-blue-100 text-blue-700' : 
                     report.status === 'Derivado' ? 'bg-purple-100 text-purple-700' : 
                     'bg-yellow-100 text-yellow-700'
                   }`}>
