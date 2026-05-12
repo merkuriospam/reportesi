@@ -159,9 +159,9 @@ const ReportList: React.FC = () => {
                     {report.Person?.name[0] || '?'}
                   </div>
                   <div>
-                    <h4 className="font-black text-gray-900 leading-tight">
+                    <button onClick={() => navigate(`/person/${report.personId}`)} className="font-black text-gray-900 leading-tight hover:text-blue-600 transition-colors text-left">
                       {report.Person?.name || 'Persona Desconocida'}
-                    </h4>
+                    </button>
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5">
                       <Clock size={12} className="mr-1" /> {formatDate(report.createdAt)}
                     </p>
