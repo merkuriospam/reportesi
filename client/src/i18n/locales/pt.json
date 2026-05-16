@@ -159,5 +159,8 @@
   },
   "app": {
     "title": "ReporteSI"
+  },
+  "footer": {
+    "madeBy": "Feito por"
   }
 }

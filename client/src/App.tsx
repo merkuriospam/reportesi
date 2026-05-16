@@ -11,6 +11,7 @@ import PersonDetail from './components/PersonDetail';
 import MapReport from './components/MapReport';
 import Sidebar from './components/Sidebar';
 import { Menu } from 'lucide-react';
+import logo from './assets/logo.jpg';
 
 function App() {
   const { t } = useTranslation();
@@ -44,6 +45,7 @@ function App() {
             <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
             <header className="bg-white border-b border-gray-100 flex items-center justify-between px-4 shadow-sm h-[60px]">
               <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition">
+                <img src={logo} alt="Logo" className="h-8 w-8 rounded-lg object-cover" />
                 <span className="text-xl font-black text-gray-800 tracking-tight">{t('app.title')}</span>
                 {userData?.groupName && (
                   <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg leading-none">
