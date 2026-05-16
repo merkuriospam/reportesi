@@ -8,7 +8,8 @@ import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import api from '../services/api';
-import { ArrowLeft, Clock, MapPin, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import ReportEditModal from './ReportEditModal';
+import { ArrowLeft, Clock, MapPin, Edit2, Trash2, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -93,6 +94,7 @@ const PersonDetail: React.FC = () => {
   const [person, setPerson] = useState<any>(null);
   const [reports, setReports] = useState<any[]>([]);
   const [allReports, setAllReports] = useState<any[]>([]);
+  const [editingReport, setEditingReport] = useState<any>(null);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -151,6 +153,11 @@ const PersonDetail: React.FC = () => {
         alert(t('person.deleteError'));
       }
     }
+  };
+
+  const handleUpdateReport = (updated: any) => {
+    setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    setAllReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
   };
 
   const totalPages = Math.ceil(total / pageSize);
@@ -326,20 +333,30 @@ const PersonDetail: React.FC = () => {
               <span className={`px-2 py-1 rounded-md text-[10px] font-bold ${
                 report.status === 'Resuelto' ? 'bg-green-100 text-green-700' :
                 report.status === 'Atendido' ? 'bg-blue-100 text-blue-700' : 
+                report.status === 'Derivado' ? 'bg-purple-100 text-purple-700' :
                 'bg-yellow-100 text-yellow-700'
               }`}>
                 {report.status}
               </span>
-              <button
-                onClick={() => {
-                  const d = new Date(report.createdAt);
-                  const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                  navigate('/map', { state: { selectedDate: dateStr } });
-                }}
-                className="text-xs font-bold text-blue-600 flex items-center hover:underline"
-              >
-                <MapPin size={14} className="mr-1" /> {t('person.viewMap')}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setEditingReport(report)}
+                  className="p-1.5 text-gray-500 bg-gray-100 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  title="Editar"
+                >
+                  <Edit3 size={16} />
+                </button>
+                <button
+                  onClick={() => {
+                    const d = new Date(report.createdAt);
+                    const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                    navigate('/map', { state: { selectedDate: dateStr } });
+                  }}
+                  className="text-xs font-bold text-blue-600 flex items-center hover:underline"
+                >
+                  <MapPin size={14} className="mr-1" /> {t('person.viewMap')}
+                </button>
+              </div>
             </div>
           </div>
         ))}
@@ -382,6 +399,14 @@ const PersonDetail: React.FC = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {editingReport && (
+        <ReportEditModal
+          report={editingReport}
+          onSave={handleUpdateReport}
+          onClose={() => setEditingReport(null)}
+        />
       )}
     </div>
   );

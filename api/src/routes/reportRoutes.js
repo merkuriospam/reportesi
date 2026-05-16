@@ -89,6 +89,22 @@ router.get('/by-date/:date', authenticateToken, async (req, res) => {
   }
 });
 
+router.put('/:id', authenticateToken, async (req, res) => {
+  try {
+    const { comment, urgency, status, latitude, longitude } = req.body;
+    const report = await Report.findOne({
+      where: { id: req.params.id },
+      include: [{ model: User, where: { groupId: req.user.groupId }, attributes: [] }],
+    });
+    if (!report) return res.status(404).json({ error: 'Report not found' });
+    await report.update({ comment, urgency, status, latitude, longitude });
+    const updated = await Report.findByPk(report.id, { include: [Person] });
+    res.json(updated);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 router.get('/dates-with-reports', authenticateToken, async (req, res) => {
   try {
     const reports = await Report.findAll({

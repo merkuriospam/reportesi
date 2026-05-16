@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import { Clock, MapPin, ClipboardList, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Clock, MapPin, ClipboardList, Calendar as CalendarIcon, X, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
 import Calendar from './Calendar';
+import ReportEditModal from './ReportEditModal';
 
 const PAGE_SIZES = [10, 20, 40];
 
@@ -18,6 +19,7 @@ const ReportList: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [editingReport, setEditingReport] = useState<any>(null);
 
   useEffect(() => {
     fetchDatesWithReports();
@@ -88,6 +90,10 @@ const ReportList: React.FC = () => {
 
   const dateParam = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+  const handleUpdateReport = (updated: any) => {
+    setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+  };
 
   const totalPages = Math.ceil(total / pageSize);
 
@@ -190,12 +196,21 @@ const ReportList: React.FC = () => {
                   </span>
                 </div>
                 
-                <button 
-                  onClick={() => navigate('/map', { state: { selectedDate: dateParam(new Date(report.createdAt)) } })}
-                  className="flex items-center text-xs font-bold text-blue-600 hover:text-indigo-700 transition"
-                >
-                  <MapPin size={16} className="mr-1" /> {t('history.viewMap')}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setEditingReport(report); }}
+                    className="p-1.5 text-gray-500 bg-gray-100 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                    title="Editar"
+                  >
+                    <Edit3 size={16} />
+                  </button>
+                  <button 
+                    onClick={() => navigate('/map', { state: { selectedDate: dateParam(new Date(report.createdAt)) } })}
+                    className="flex items-center text-xs font-bold text-blue-600 hover:text-indigo-700 transition"
+                  >
+                    <MapPin size={16} className="mr-1" /> {t('history.viewMap')}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -240,6 +255,14 @@ const ReportList: React.FC = () => {
             </button>
           </div>
         </div>
+      )}
+
+      {editingReport && (
+        <ReportEditModal
+          report={editingReport}
+          onSave={handleUpdateReport}
+          onClose={() => setEditingReport(null)}
+        />
       )}
     </div>
   );

@@ -136,11 +136,22 @@
     "viewProfile": "Ver perfil",
     "report": "reporte",
     "reports": "reportes",
-    "search": "Buscar"
+    "search": "Buscar",
+    "editVisit": "Editar visita"
   },
   "calendar": {
     "months": ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
     "days": ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+  },
+  "editReport": {
+    "title": "Editar Reporte",
+    "locationLabel": "Ubicación",
+    "noLocation": "Sin coordenadas",
+    "dragHint": "Arrastrá el mapa para ajustar la ubicación",
+    "save": "GUARDAR",
+    "saving": "GUARDANDO...",
+    "cancel": "Cancelar",
+    "error": "Error al guardar los cambios"
   },
   "common": {
     "loading": "Cargando...",

@@ -9,6 +9,7 @@ import 'leaflet.markercluster';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Calendar as CalendarIcon } from 'lucide-react';
 import Calendar from './Calendar';
+import ReportEditModal from './ReportEditModal';
 import api from '../services/api';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -75,6 +76,8 @@ const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
       const timeStr = new Date(report.createdAt).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' });
       const unknownName = t('map.unknownPerson');
       const viewProfileText = t('map.viewProfile');
+      const editVisitText = t('map.editVisit');
+      const editSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>';
       marker.bindPopup(`
         <div class="min-w-[200px]">
           <div class="flex items-center gap-2 mb-2">
@@ -85,9 +88,13 @@ const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
             ${timeStr}
           </p>
           ${report.comment ? `<p class="text-sm text-gray-700 italic mb-2">"${report.comment}"</p>` : ''}
-          <button onclick="window.__navigateToPerson(${report.personId})" class="w-full mb-2 flex items-center justify-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 rounded-lg transition-colors">
+          <button onclick="window.__navigateToPerson(${report.personId})" class="w-full mb-1.5 flex items-center justify-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 rounded-lg transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             ${viewProfileText}
+          </button>
+          <button onclick="window.__editReportById(${report.id})" class="w-full mb-2 flex items-center justify-center gap-1.5 text-xs font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 py-1.5 rounded-lg transition-colors">
+            ${editSvg}
+            ${editVisitText}
           </button>
           <div class="flex gap-2">
             <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-gray-100 text-gray-600">${report.urgency}</span>
@@ -133,12 +140,25 @@ const MapReport: React.FC = () => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const navigate = useNavigate();
   const mapInstance = useRef<L.Map | null>(null);
+  const [editingReport, setEditingReport] = useState<any>(null);
   const navigateToPerson = (id: number) => navigate(`/person/${id}`);
 
   useEffect(() => {
     (window as any).__navigateToPerson = navigateToPerson;
     return () => { delete (window as any).__navigateToPerson; };
   }, [navigateToPerson]);
+
+  useEffect(() => {
+    (window as any).__editReportById = (id: number) => {
+      const r = reports.find((rep) => rep.id === id);
+      if (r) setEditingReport(r);
+    };
+    return () => { delete (window as any).__editReportById; };
+  }, [reports]);
+
+  const handleUpdateReport = (updated: any) => {
+    setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+  };
 
   useEffect(() => {
     fetchDatesWithReports();
@@ -244,6 +264,14 @@ const MapReport: React.FC = () => {
         <MapController onReady={(map) => { mapInstance.current = map; }} />
         <ClusterLayer reports={reports} />
       </MapContainer>
+
+      {editingReport && (
+        <ReportEditModal
+          report={editingReport}
+          onSave={handleUpdateReport}
+          onClose={() => setEditingReport(null)}
+        />
+      )}
     </div>
   );
 };
