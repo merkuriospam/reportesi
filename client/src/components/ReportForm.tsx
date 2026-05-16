@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../services/api';
 import Autocomplete from './Autocomplete';
+import CreatePersonModal from './CreatePersonModal';
 import { MapPin, CheckCircle } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
@@ -17,6 +18,7 @@ const ReportForm: React.FC = () => {
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     fetchPeople();
@@ -52,6 +54,11 @@ const ReportForm: React.FC = () => {
         }
       );
     }
+  };
+
+  const handlePersonCreated = (person: { id: number; name: string }) => {
+    setPeople((prev) => [person, ...prev]);
+    setPersonId(person.id.toString());
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -100,6 +107,7 @@ const ReportForm: React.FC = () => {
               value={personId}
               onChange={setPersonId}
               onEdit={(person) => navigate('/people', { state: { editPerson: person } })}
+              onCreate={() => setShowCreateModal(true)}
             />
           </div>
 
@@ -177,6 +185,13 @@ const ReportForm: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {showCreateModal && (
+        <CreatePersonModal
+          onCreated={handlePersonCreated}
+          onClose={() => setShowCreateModal(false)}
+        />
+      )}
     </div>
   );
 };

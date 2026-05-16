@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Users, Edit2, X } from 'lucide-react';
+import { Users, Edit2, Plus, X } from 'lucide-react';
 
 interface Person {
   id: number;
@@ -13,9 +13,10 @@ interface AutocompleteProps {
   value: string;
   onChange: (personId: string) => void;
   onEdit: (person: Person) => void;
+  onCreate?: () => void;
 }
 
-const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, onEdit }) => {
+const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, onEdit, onCreate }) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -109,6 +110,15 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, on
           )}
         </div>
 
+        {onCreate && (
+          <button
+            type="button"
+            onClick={onCreate}
+            className="shrink-0 p-4 rounded-2xl transition-all flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-100 ring-1 ring-emerald-200"
+          >
+            <Plus size={20} />
+          </button>
+        )}
         <button
           type="button"
           onClick={() => selected && onEdit(selected)}
