@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import api from '../services/api';
+import Autocomplete from './Autocomplete';
 import { X, MapPin } from 'lucide-react';
 
 const MapPicker: React.FC<{
@@ -43,12 +44,18 @@ interface Props {
 const ReportEditModal: React.FC<Props> = ({ report, onSave, onClose }) => {
   const { t } = useTranslation();
 
+  const [people, setPeople] = useState<any[]>([]);
+  const [personId, setPersonId] = useState(report.personId?.toString() || '');
   const [comment, setComment] = useState(report.comment || '');
   const [urgency, setUrgency] = useState(report.urgency || 'Media');
   const [status, setStatus] = useState(report.status || 'Pendiente');
   const [latitude, setLatitude] = useState(parseFloat(report.latitude) || 0);
   const [longitude, setLongitude] = useState(parseFloat(report.longitude) || 0);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    api.get('/people?limit=1000').then((res) => setPeople(res.data.data)).catch(() => {});
+  }, []);
 
   const handleCenterChange = (lat: number, lng: number) => {
     setLatitude(lat);
@@ -59,6 +66,7 @@ const ReportEditModal: React.FC<Props> = ({ report, onSave, onClose }) => {
     setSaving(true);
     try {
       const res = await api.put(`/reports/${report.id}`, {
+        personId: parseInt(personId),
         comment,
         urgency,
         status,
@@ -101,6 +109,18 @@ const ReportEditModal: React.FC<Props> = ({ report, onSave, onClose }) => {
         </div>
 
         <div className="p-5 space-y-4 max-h-[70vh] overflow-y-auto">
+          <div className="space-y-1">
+            <label className="text-sm font-bold text-gray-700 ml-1">
+              {t('report.personLabel')}
+            </label>
+            <Autocomplete
+              people={people}
+              value={personId}
+              onChange={setPersonId}
+              onEdit={(_p) => {}}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="text-sm font-bold text-gray-700 ml-1">

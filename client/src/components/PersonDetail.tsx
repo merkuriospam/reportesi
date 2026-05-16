@@ -156,8 +156,15 @@ const PersonDetail: React.FC = () => {
   };
 
   const handleUpdateReport = (updated: any) => {
-    setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
-    setAllReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    const currentPersonId = parseInt(id!);
+    if (updated.personId !== currentPersonId) {
+      setReports((prev) => prev.filter((r) => r.id !== updated.id));
+      setAllReports((prev) => prev.filter((r) => r.id !== updated.id));
+      setTotal((prev) => prev - 1);
+    } else {
+      setReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+      setAllReports((prev) => prev.map((r) => (r.id === updated.id ? updated : r)));
+    }
   };
 
   const totalPages = Math.ceil(total / pageSize);
