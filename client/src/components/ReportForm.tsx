@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MapContainer, TileLayer, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import api from '../services/api';
 import Autocomplete from './Autocomplete';
 import CreatePersonModal from './CreatePersonModal';
 import { MapPin, CheckCircle } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
 
 const ReportForm: React.FC = () => {
   const { t } = useTranslation();
@@ -16,13 +26,14 @@ const ReportForm: React.FC = () => {
   const [urgency, setUrgency] = useState('Media');
   const [status, setStatus] = useState('Pendiente');
   const [location, setLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [gpsFixCount, setGpsFixCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     fetchPeople();
-    getLocation();
+    getLocation().catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -39,21 +50,62 @@ const ReportForm: React.FC = () => {
     }
   };
 
-  const getLocation = () => {
-    if (navigator.geolocation) {
+  const getLocation = (): Promise<{ lat: number; lng: number }> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
+      }
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setLocation({
+          const loc = {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-          });
+          };
+          setLocation(loc);
+          setGpsFixCount((c) => c + 1);
+          resolve(loc);
         },
         (error) => {
           console.error('Error getting location', error);
-          alert('No se pudo obtener la ubicación. Por favor activa el GPS.');
-        }
+          reject(error);
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
-    }
+    });
+  };
+
+  const DragHandler: React.FC<{
+    center: [number, number];
+    onCenterChange: (lat: number, lng: number) => void;
+    gpsFixCount: number;
+  }> = ({ center, onCenterChange, gpsFixCount }) => {
+    const map = useMap();
+    const initial = useRef(true);
+
+    useEffect(() => {
+      if (initial.current) {
+        map.setView(center, 16);
+        initial.current = false;
+      }
+    }, []);
+
+    useEffect(() => {
+      if (!initial.current) {
+        map.flyTo(center, 16);
+      }
+    }, [gpsFixCount]);
+
+    useEffect(() => {
+      const handler = () => {
+        const c = map.getCenter();
+        onCenterChange(c.lat, c.lng);
+      };
+      map.on('dragend', handler);
+      return () => { map.off('dragend', handler); };
+    }, [map, onCenterChange]);
+
+    return null;
   };
 
   const handlePersonCreated = (person: { id: number; name: string }) => {
@@ -63,16 +115,12 @@ const ReportForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!location) {
-      alert('Esperando ubicación GPS...');
-      return;
-    }
     setLoading(true);
     try {
       await api.post('/reports', {
         personId: parseInt(personId),
-        latitude: location.lat,
-        longitude: location.lng,
+        latitude: location!.lat,
+        longitude: location!.lng,
         comment,
         urgency,
         status
@@ -81,9 +129,15 @@ const ReportForm: React.FC = () => {
       setPersonId('');
       setComment('');
       setUrgency('Media');
+      setLocation(null);
+      getLocation().catch(() => {});
       setTimeout(() => setMessage(''), 3000);
     } catch (err) {
-      alert('Error al enviar el reporte');
+      if (err instanceof GeolocationPositionError) {
+        alert('No se pudo obtener la ubicación. Por favor activa el GPS.');
+      } else {
+        alert('Error al enviar el reporte');
+      }
     } finally {
       setLoading(false);
     }
@@ -150,19 +204,46 @@ const ReportForm: React.FC = () => {
             />
           </div>
 
-          <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between">
-            <div className="flex items-center text-sm font-semibold">
-              <MapPin size={20} className="mr-2 text-blue-500" />
-              {location ? (
-                <span className="text-green-600">{t('report.locationFixed')}</span>
-              ) : (
-                <span className="text-gray-400 animate-pulse">{t('report.locationGetting')}</span>
-              )}
-            </div>
+          <div className="h-48 rounded-2xl overflow-hidden ring-1 ring-gray-200 relative">
+            {location ? (
+              <>
+                <MapContainer
+                  center={[location.lat, location.lng]}
+                  zoom={16}
+                  style={{ height: '100%', width: '100%' }}
+                  scrollWheelZoom={true}
+                  dragging={true}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                  />
+                  <DragHandler
+                    center={[location.lat, location.lng]}
+                    onCenterChange={(lat, lng) => setLocation({ lat, lng })}
+                    gpsFixCount={gpsFixCount}
+                  />
+                </MapContainer>
+                <div className="absolute inset-0 pointer-events-none z-[1000] flex items-center justify-center">
+                  <MapPin
+                    size={32}
+                    className="text-red-500 drop-shadow-lg"
+                    style={{ transform: 'translateY(-16px)' }}
+                    fill="white"
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center justify-center h-full bg-gray-50 text-gray-400 text-sm font-medium">
+                <MapPin size={24} className="mr-2 animate-pulse" />
+                {t('report.locationGetting')}
+              </div>
+            )}
             {location && (
-              <span className="text-[10px] text-gray-400 font-mono">
-                {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
-              </span>
+              <div className="absolute bottom-2 left-2 z-[1000] bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-mono font-bold text-gray-600 shadow">
+                <MapPin size={12} className="inline mr-1 text-blue-500" />
+                {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+              </div>
             )}
           </div>
 

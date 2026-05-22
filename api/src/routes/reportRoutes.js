@@ -4,16 +4,35 @@ const { Report, Person, User } = require('../models');
 const { Op } = require('sequelize');
 const authenticateToken = require('../middleware/auth');
 
+function getOffsetMs(offsetMinutes) {
+  return (parseInt(offsetMinutes) || 0) * 60000;
+}
+
+function getDateRange(dateStr, offsetMinutes) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const offMs = getOffsetMs(offsetMinutes);
+  const start = new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0) + offMs);
+  const end = new Date(Date.UTC(year, month - 1, day, 23, 59, 59, 999) + offMs);
+  return { start, end };
+}
+
+function toDateStr(date, offsetMinutes) {
+  const offMs = getOffsetMs(offsetMinutes);
+  const d = new Date(date.getTime() - offMs);
+  const year = d.getUTCFullYear();
+  const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const limit = Math.min(parseInt(req.query.limit) || 10, 1000);
-    const offset = parseInt(req.query.offset) || 0;
+    const pageOffset = parseInt(req.query.offset) || 0;
     const where = {};
     if (req.query.date) {
-      const [year, month, day] = req.query.date.split('-').map(Number);
-      where.createdAt = {
-        [Op.between]: [new Date(year, month - 1, day, 0, 0, 0, 0), new Date(year, month - 1, day, 23, 59, 59, 999)]
-      };
+      const { start, end } = getDateRange(req.query.date, req.query.tz);
+      where.createdAt = { [Op.between]: [start, end] };
     }
     const { count, rows } = await Report.findAndCountAll({
       where,
@@ -23,7 +42,7 @@ router.get('/', authenticateToken, async (req, res) => {
       ],
       order: [['createdAt', 'DESC']],
       limit,
-      offset,
+      offset: pageOffset,
     });
     res.json({ data: rows, total: count });
   } catch (error) {
@@ -66,15 +85,11 @@ router.get('/person/:personId', authenticateToken, async (req, res) => {
 
 router.get('/by-date/:date', authenticateToken, async (req, res) => {
   try {
-    const { date } = req.params;
-    const [year, month, day] = date.split('-').map(Number);
-    const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
-    const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
-
+    const { start, end } = getDateRange(req.params.date, req.query.tz);
     const reports = await Report.findAll({
       where: {
         createdAt: {
-          [Op.between]: [startOfDay, endOfDay]
+          [Op.between]: [start, end]
         }
       },
       include: [
@@ -114,13 +129,7 @@ router.get('/dates-with-reports', authenticateToken, async (req, res) => {
       ],
       raw: true
     });
-    const dates = [...new Set(reports.map(r => {
-      const d = new Date(r.createdAt);
-      const year = d.getFullYear();
-      const month = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }))];
+    const dates = [...new Set(reports.map(r => toDateStr(r.createdAt, req.query.tz)))];
     res.json(dates);
   } catch (error) {
     res.status(500).json({ error: error.message });

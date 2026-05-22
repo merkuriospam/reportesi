@@ -170,7 +170,7 @@ const MapReport: React.FC = () => {
 
   const fetchDatesWithReports = async () => {
     try {
-      const res = await api.get('/reports/dates-with-reports');
+      const res = await api.get(`/reports/dates-with-reports?tz=${new Date().getTimezoneOffset()}`);
       setDatesWithReports(res.data);
     } catch (err) {
       console.error('Error fetching dates', err);
@@ -184,7 +184,7 @@ const MapReport: React.FC = () => {
       const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
       const day = String(selectedDate.getDate()).padStart(2, '0');
       const dateStr = `${year}-${month}-${day}`;
-      const res = await api.get(`/reports/by-date/${dateStr}`);
+      const res = await api.get(`/reports/by-date/${dateStr}?tz=${new Date().getTimezoneOffset()}`);
       setReports(res.data);
     } catch (err) {
       console.error('Error fetching reports', err);

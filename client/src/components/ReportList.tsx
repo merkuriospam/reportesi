@@ -31,7 +31,7 @@ const ReportList: React.FC = () => {
 
   const fetchDatesWithReports = async () => {
     try {
-      const res = await api.get('/reports/dates-with-reports');
+      const res = await api.get(`/reports/dates-with-reports?tz=${new Date().getTimezoneOffset()}`);
       setDatesWithReports(res.data);
     } catch (err) {
       console.error('Error fetching dates', err);
@@ -46,7 +46,7 @@ const ReportList: React.FC = () => {
         const year = selectedDate.getFullYear();
         const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
         const day = String(selectedDate.getDate()).padStart(2, '0');
-        url += `&date=${year}-${month}-${day}`;
+        url += `&date=${year}-${month}-${day}&tz=${new Date().getTimezoneOffset()}`;
       }
       const response = await api.get(url);
       setReports(response.data.data);

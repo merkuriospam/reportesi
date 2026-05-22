@@ -18,6 +18,7 @@ Esta aplicación está diseñada para ayudar a voluntarios durante recorridas no
 ### 1. Preparar la Base de Datos
 
 En tu cliente de MariaDB:
+
 ```sql
 CREATE DATABASE reportesi;
 ```
@@ -33,6 +34,7 @@ npm start
 ```
 
 **Usuario inicial:**
+
 - **Usuario:** `admin`
 - **Contraseña:** `password123`
 
@@ -68,3 +70,5 @@ Cada **reporte** representa un encuentro con una persona asistida. El estado act
 
 - **Frontend**: React, Vite, Tailwind CSS, Lucide Icons, Axios.
 - **Backend**: Node.js, Express, Sequelize, MariaDB, JWT, Bcrypt.
+
+npx opencode-ai
