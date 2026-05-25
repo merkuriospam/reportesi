@@ -32,15 +32,15 @@ router.get('/', authenticateToken, async (req, res) => {
     const where = {};
     if (req.query.date) {
       const { start, end } = getDateRange(req.query.date, req.query.tz);
-      where.createdAt = { [Op.between]: [start, end] };
+      where.reportedAt = { [Op.between]: [start, end] };
     }
     const { count, rows } = await Report.findAndCountAll({
       where,
       include: [
-        { model: User, where: { groupId: req.user.groupId }, attributes: [] },
+        { model: User, where: { groupId: req.user.groupId }, attributes: ['username'] },
         Person,
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['reportedAt', 'DESC']],
       limit,
       offset: pageOffset,
     });
@@ -70,10 +70,10 @@ router.get('/person/:personId', authenticateToken, async (req, res) => {
     const { count, rows } = await Report.findAndCountAll({
       where: { personId: req.params.personId },
       include: [
-        { model: User, where: { groupId: req.user.groupId }, attributes: [] },
+        { model: User, where: { groupId: req.user.groupId }, attributes: ['username'] },
         Person,
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['reportedAt', 'DESC']],
       limit,
       offset,
     });
@@ -88,15 +88,15 @@ router.get('/by-date/:date', authenticateToken, async (req, res) => {
     const { start, end } = getDateRange(req.params.date, req.query.tz);
     const reports = await Report.findAll({
       where: {
-        createdAt: {
+        reportedAt: {
           [Op.between]: [start, end]
         }
       },
       include: [
-        { model: User, where: { groupId: req.user.groupId }, attributes: [] },
+        { model: User, where: { groupId: req.user.groupId }, attributes: ['username'] },
         Person,
       ],
-      order: [['createdAt', 'DESC']]
+      order: [['reportedAt', 'DESC']]
     });
     res.json(reports);
   } catch (error) {
@@ -106,13 +106,13 @@ router.get('/by-date/:date', authenticateToken, async (req, res) => {
 
 router.put('/:id', authenticateToken, async (req, res) => {
   try {
-    const { comment, urgency, status, latitude, longitude, personId } = req.body;
+    const { comment, urgency, status, latitude, longitude, personId, reportedAt } = req.body;
     const report = await Report.findOne({
       where: { id: req.params.id },
       include: [{ model: User, where: { groupId: req.user.groupId }, attributes: [] }],
     });
     if (!report) return res.status(404).json({ error: 'Report not found' });
-    await report.update({ comment, urgency, status, latitude, longitude, personId });
+    await report.update({ comment, urgency, status, latitude, longitude, personId, reportedAt });
     const updated = await Report.findByPk(report.id, { include: [Person] });
     res.json(updated);
   } catch (error) {
@@ -123,13 +123,13 @@ router.put('/:id', authenticateToken, async (req, res) => {
 router.get('/dates-with-reports', authenticateToken, async (req, res) => {
   try {
     const reports = await Report.findAll({
-      attributes: ['createdAt'],
+      attributes: ['reportedAt'],
       include: [
         { model: User, where: { groupId: req.user.groupId }, attributes: [] },
       ],
       raw: true
     });
-    const dates = [...new Set(reports.map(r => toDateStr(r.createdAt, req.query.tz)))];
+    const dates = [...new Set(reports.map(r => toDateStr(r.reportedAt, req.query.tz)))];
     res.json(dates);
   } catch (error) {
     res.status(500).json({ error: error.message });

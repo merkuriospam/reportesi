@@ -41,6 +41,20 @@ interface Props {
   onClose: () => void;
 }
 
+function toLocalDatetime(utcIso: string): string {
+  const d = new Date(utcIso);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const hours = String(d.getHours()).padStart(2, '0');
+  const minutes = String(d.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function toUtcIso(localDatetime: string): string {
+  return new Date(localDatetime).toISOString();
+}
+
 const ReportEditModal: React.FC<Props> = ({ report, onSave, onClose }) => {
   const { t } = useTranslation();
 
@@ -51,6 +65,9 @@ const ReportEditModal: React.FC<Props> = ({ report, onSave, onClose }) => {
   const [status, setStatus] = useState(report.status || 'Pendiente');
   const [latitude, setLatitude] = useState(parseFloat(report.latitude) || 0);
   const [longitude, setLongitude] = useState(parseFloat(report.longitude) || 0);
+  const [reportedAt, setReportedAt] = useState(
+    report.reportedAt ? toLocalDatetime(report.reportedAt) : ''
+  );
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -72,6 +89,7 @@ const ReportEditModal: React.FC<Props> = ({ report, onSave, onClose }) => {
         status,
         latitude,
         longitude,
+        reportedAt: toUtcIso(reportedAt),
       });
       onSave(res.data);
       onClose();
@@ -164,6 +182,18 @@ const ReportEditModal: React.FC<Props> = ({ report, onSave, onClose }) => {
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder={t('report.commentPlaceholder')}
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-sm font-bold text-gray-700 ml-1">
+              {t('editReport.reportedAtLabel')}
+            </label>
+            <input
+              type="datetime-local"
+              className="w-full p-3 bg-gray-50 border-0 rounded-xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+              value={reportedAt}
+              onChange={(e) => setReportedAt(e.target.value)}
             />
           </div>
 

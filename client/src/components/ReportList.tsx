@@ -74,8 +74,10 @@ const ReportList: React.FC = () => {
     return new Date(dateString).toLocaleString('es-AR', {
       day: '2-digit',
       month: 'short',
+      year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false
     });
   };
 
@@ -171,7 +173,8 @@ const ReportList: React.FC = () => {
                       {report.Person?.name || t('history.unknownPerson')}
                     </button>
                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest flex items-center mt-0.5">
-                      <Clock size={12} className="mr-1" /> {formatDate(report.createdAt)}
+                      <Clock size={12} className="mr-1" /> {formatDate(report.reportedAt)}
+                      {report.User?.username && <span className="ml-1.5 text-gray-300">• {report.User.username}</span>}
                     </p>
                   </div>
                 </div>
@@ -205,7 +208,7 @@ const ReportList: React.FC = () => {
                     <Edit3 size={16} />
                   </button>
                   <button 
-                    onClick={() => navigate('/map', { state: { selectedDate: dateParam(new Date(report.createdAt)) } })}
+                    onClick={() => navigate('/map', { state: { selectedDate: dateParam(new Date(report.reportedAt)) } })}
                     className="flex items-center text-xs font-bold text-blue-600 hover:text-indigo-700 transition"
                   >
                     <MapPin size={16} className="mr-1" /> {t('history.viewMap')}

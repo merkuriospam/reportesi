@@ -57,7 +57,7 @@ const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
         icon: getUrgencyIcon(report.urgency),
       });
 
-      const timeStr = new Date(report.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const timeStr = new Date(report.reportedAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       marker.bindPopup(`
         <div class="min-w-[150px]">
           <div class="flex items-center gap-2 mb-1">
@@ -172,7 +172,7 @@ const PersonDetail: React.FC = () => {
   const URG_VAL: Record<string, number> = { Baja: 1, Media: 3, Alta: 5, 'Crítica': 8 };
 
   const sortedReports = React.useMemo(() =>
-    [...allReports].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()),
+    [...allReports].sort((a, b) => new Date(a.reportedAt).getTime() - new Date(b.reportedAt).getTime()),
     [allReports]
   );
 
@@ -184,7 +184,7 @@ const PersonDetail: React.FC = () => {
       x: PL + (i / (sortedReports.length - 1)) * PW,
       y: PT + PH - (URG_VAL[r.urgency] || 0) / MAX * PH,
       urgency: r.urgency,
-      date: new Date(r.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
+      date: new Date(r.reportedAt).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' }),
     }));
     const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
     const yLabels = [
@@ -325,7 +325,7 @@ const PersonDetail: React.FC = () => {
             <div className="flex justify-between items-start mb-3">
               <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center">
                 <Clock size={14} className="mr-1" /> 
-                {new Date(report.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                {new Date(report.reportedAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
               </span>
               <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase border ${
                 report.urgency === 'Crítica' ? 'bg-red-100 text-red-700 border-red-200' :
@@ -355,7 +355,7 @@ const PersonDetail: React.FC = () => {
                 </button>
                 <button
                   onClick={() => {
-                    const d = new Date(report.createdAt);
+                    const d = new Date(report.reportedAt);
                     const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                     navigate('/map', { state: { selectedDate: dateStr } });
                   }}

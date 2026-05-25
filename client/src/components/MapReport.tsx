@@ -73,7 +73,7 @@ const ClusterLayer: React.FC<{ reports: any[] }> = ({ reports }) => {
         icon: getUrgencyIcon(report.urgency),
       });
 
-      const timeStr = new Date(report.createdAt).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' });
+      const timeStr = new Date(report.reportedAt).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' });
       const unknownName = t('map.unknownPerson');
       const viewProfileText = t('map.viewProfile');
       const editVisitText = t('map.editVisit');

@@ -117,7 +117,7 @@ const seedData = async () => {
       status: 'Pendiente',
       comment: 'Visto en la Plaza San Martín de Mar del Plata.',
       userId: admin.id,
-      createdAt: new Date('2026-05-09'),
+      reportedAt: new Date('2026-05-09'),
       updatedAt: new Date('2026-05-09'),
     });
 

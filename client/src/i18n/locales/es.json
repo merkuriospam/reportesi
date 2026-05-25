@@ -70,6 +70,7 @@
     "locationFixed": "Ubicación fijada correctamente",
     "locationGetting": "Obteniendo coordenadas GPS...",
     "locationWaiting": "Esperando ubicación GPS...",
+    "refreshLocation": "Actualizar ubicación",
     "submitButton": "REGISTRAR VISITA",
     "processing": "Procesando...",
     "success": "Visita registrada correctamente"
@@ -145,6 +146,7 @@
   },
   "editReport": {
     "title": "Editar Reporte",
+    "reportedAtLabel": "Fecha y hora",
     "locationLabel": "Ubicación",
     "noLocation": "Sin coordenadas",
     "dragHint": "Arrastrá el mapa para ajustar la ubicación",

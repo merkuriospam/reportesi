@@ -37,7 +37,7 @@ const Dashboard: React.FC = () => {
       const latestPerPerson = new Map<number, any>();
       for (const r of allReports) {
         const prev = latestPerPerson.get(r.personId);
-        if (!prev || new Date(r.createdAt) > new Date(prev.createdAt)) {
+        if (!prev || new Date(r.reportedAt) > new Date(prev.reportedAt)) {
           latestPerPerson.set(r.personId, r);
         }
       }
@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
   const monthlyData = useMemo(() => {
     const counts: Record<string, number> = {};
     reports.forEach((r: any) => {
-      const raw = r.createdAt;
+      const raw = r.reportedAt;
       if (!raw) return;
       const d = new Date(raw);
       const s = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -75,7 +75,7 @@ const Dashboard: React.FC = () => {
     const latest = new Map<number, any>();
     for (const r of reports) {
       const prev = latest.get(r.personId);
-      if (!prev || new Date(r.createdAt) > new Date(prev.createdAt)) {
+      if (!prev || new Date(r.reportedAt) > new Date(prev.reportedAt)) {
         latest.set(r.personId, r);
       }
     }
@@ -166,7 +166,7 @@ const Dashboard: React.FC = () => {
                       <button onClick={() => navigate(`/person/${r.personId}`)} className="text-sm font-bold text-gray-900 truncate hover:text-blue-600 transition-colors">{r.Person?.name || t('dashboard.unknownPerson')}</button>
                       <p className="text-[10px] text-gray-400 font-medium flex items-center gap-1 mt-0.5">
                         <Clock size={10} />
-                        {new Date(r.createdAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                        {new Date(r.reportedAt).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                       </p>
                       {r.comment && <p className="text-xs text-gray-500 mt-1 line-clamp-2">{r.comment}</p>}
                       <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold ${

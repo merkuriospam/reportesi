@@ -34,6 +34,11 @@ const Report = sequelize.define('Report', {
     type: DataTypes.INTEGER,
     allowNull: true,
   },
+  reportedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW,
+  },
 }, {
   paranoid: true,
 });

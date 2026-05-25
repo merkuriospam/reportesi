@@ -61,8 +61,8 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, on
 
   return (
     <div ref={inputRef} className="relative">
-      <div className="flex gap-2">
-        <div className="relative flex-1 min-w-0">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="relative w-full sm:flex-1 sm:min-w-0">
           <input
             type="text"
             className="w-full p-4 pl-10 bg-gray-50 border-0 rounded-2xl ring-1 ring-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition text-lg font-medium"
@@ -110,27 +110,29 @@ const Autocomplete: React.FC<AutocompleteProps> = ({ people, value, onChange, on
           )}
         </div>
 
-        {onCreate && (
+        <div className="flex flex-row gap-2 sm:shrink-0">
+          {onCreate && (
+            <button
+              type="button"
+              onClick={onCreate}
+              className="flex-1 sm:shrink-0 sm:flex-initial p-4 rounded-2xl transition-all flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-100 ring-1 ring-emerald-200"
+            >
+              <Plus size={20} />
+            </button>
+          )}
           <button
             type="button"
-            onClick={onCreate}
-            className="shrink-0 p-4 rounded-2xl transition-all flex items-center justify-center bg-emerald-50 text-emerald-600 hover:bg-emerald-100 ring-1 ring-emerald-200"
+            onClick={() => selected && onEdit(selected)}
+            disabled={!selected}
+            className={`flex-1 sm:shrink-0 sm:flex-initial p-4 rounded-2xl transition-all flex items-center justify-center ${
+              selected
+                ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 ring-1 ring-blue-200'
+                : 'bg-gray-50 text-gray-300 cursor-not-allowed ring-1 ring-gray-200'
+            }`}
           >
-            <Plus size={20} />
+            <Edit2 size={20} />
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => selected && onEdit(selected)}
-          disabled={!selected}
-          className={`shrink-0 p-4 rounded-2xl transition-all flex items-center justify-center ${
-            selected
-              ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 ring-1 ring-blue-200'
-              : 'bg-gray-50 text-gray-300 cursor-not-allowed ring-1 ring-gray-200'
-          }`}
-        >
-          <Edit2 size={20} />
-        </button>
+        </div>
       </div>
     </div>
   );

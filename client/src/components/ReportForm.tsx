@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import api from '../services/api';
 import Autocomplete from './Autocomplete';
 import CreatePersonModal from './CreatePersonModal';
-import { MapPin, CheckCircle } from 'lucide-react';
+import { MapPin, CheckCircle, RefreshCw } from 'lucide-react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -240,9 +240,19 @@ const ReportForm: React.FC = () => {
               </div>
             )}
             {location && (
-              <div className="absolute bottom-2 left-2 z-[1000] bg-white/90 backdrop-blur px-2 py-1 rounded-lg text-[10px] font-mono font-bold text-gray-600 shadow">
-                <MapPin size={12} className="inline mr-1 text-blue-500" />
-                {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+              <div className="absolute bottom-2 left-2 z-[1000] flex items-center gap-1 bg-white/90 backdrop-blur px-2 py-1 rounded-lg shadow">
+                <MapPin size={12} className="text-blue-500 shrink-0" />
+                <span className="text-[10px] font-mono font-bold text-gray-600">
+                  {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => { getLocation().catch(() => {}); }}
+                  className="ml-0.5 p-0.5 rounded-md text-blue-500 hover:bg-blue-100 transition-colors"
+                  title={t('report.refreshLocation')}
+                >
+                  <RefreshCw size={12} />
+                </button>
               </div>
             )}
           </div>
