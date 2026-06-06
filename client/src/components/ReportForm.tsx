@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -16,6 +16,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
+const haversineDistance = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371;
+  const toRad = (deg: number) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2
+    + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 const ReportForm: React.FC = () => {
   const { t } = useTranslation();
   const [searchParams] = useSearchParams();
@@ -30,6 +40,19 @@ const ReportForm: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
+
+  const sortedPeople = useMemo(() => {
+    if (!location) return people;
+    return [...people].sort((a, b) => {
+      const distA = a.lastLat != null && a.lastLng != null
+        ? haversineDistance(location.lat, location.lng, parseFloat(a.lastLat), parseFloat(a.lastLng))
+        : Infinity;
+      const distB = b.lastLat != null && b.lastLng != null
+        ? haversineDistance(location.lat, location.lng, parseFloat(b.lastLat), parseFloat(b.lastLng))
+        : Infinity;
+      return distA - distB;
+    });
+  }, [people, location]);
 
   useEffect(() => {
     fetchPeople();
@@ -157,7 +180,7 @@ const ReportForm: React.FC = () => {
           <div className="space-y-3">
             <label className="text-sm font-bold text-gray-700 ml-1">{t('report.personLabel')}</label>
             <Autocomplete
-              people={people}
+              people={sortedPeople}
               value={personId}
               onChange={setPersonId}
               onEdit={(person) => navigate('/people', { state: { editPerson: person } })}

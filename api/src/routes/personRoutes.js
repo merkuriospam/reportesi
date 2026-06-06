@@ -16,6 +16,8 @@ router.get('/', authenticateToken, async (req, res) => {
           [sequelize.literal(`(SELECT urgency FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.reportedAt DESC LIMIT 1)`), 'lastUrgency'],
           [sequelize.literal(`(SELECT status FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.reportedAt DESC LIMIT 1)`), 'lastStatus'],
           [sequelize.literal(`(SELECT reportedAt FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.reportedAt DESC LIMIT 1)`), 'lastVisitDate'],
+          [sequelize.literal(`(SELECT latitude FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.reportedAt DESC LIMIT 1)`), 'lastLat'],
+          [sequelize.literal(`(SELECT longitude FROM Reports WHERE Reports.personId = Person.id AND Reports.deletedAt IS NULL ORDER BY Reports.reportedAt DESC LIMIT 1)`), 'lastLng'],
         ],
       },
       limit,
